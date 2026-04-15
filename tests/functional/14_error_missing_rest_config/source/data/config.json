@@ -1,0 +1,27 @@
+{
+  "action": "run",
+  "parameters": {
+    "connection": {
+      "db_host": "PLACEHOLDER",
+      "db_port": 1521,
+      "db_service_name": "PLACEHOLDER",
+      "#db_user": "PLACEHOLDER",
+      "#db_password": "PLACEHOLDER"
+    },
+    "destination": {
+      "write_mode": "preset",
+      "module": "tca",
+      "entity": "hz_create_organization"
+    }
+  },
+  "storage": {
+    "input": {
+      "tables": [
+        {
+          "source": "in.c-test.tca_organizations",
+          "destination": "tca_organizations.csv"
+        }
+      ]
+    }
+  }
+}

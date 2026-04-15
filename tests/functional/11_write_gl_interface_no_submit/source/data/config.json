@@ -1,0 +1,31 @@
+{
+  "action": "run",
+  "parameters": {
+    "connection": {
+      "db_host": "PLACEHOLDER",
+      "db_port": 1521,
+      "db_service_name": "PLACEHOLDER",
+      "#db_user": "PLACEHOLDER",
+      "#db_password": "PLACEHOLDER"
+    },
+    "destination": {
+      "write_mode": "preset",
+      "module": "gl",
+      "entity": "gl_interface",
+      "ledger_id": 1,
+      "write_operation": "insert",
+      "submit_program": false,
+      "batch_size": 100
+    }
+  },
+  "storage": {
+    "input": {
+      "tables": [
+        {
+          "source": "in.c-test.gl_journal_entries",
+          "destination": "gl_journal_entries.csv"
+        }
+      ]
+    }
+  }
+}

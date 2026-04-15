@@ -1,0 +1,1 @@
+[{"value": "ap", "label": "Accounts Payable (AP)"}, {"value": "ar", "label": "Accounts Receivable (AR)"}, {"value": "gl", "label": "General Ledger (GL)"}, {"value": "po", "label": "Purchasing (PO)"}, {"value": "inv", "label": "Inventory (INV)"}, {"value": "om", "label": "Order Management (OM)"}, {"value": "tca", "label": "Trading Community (TCA)"}]

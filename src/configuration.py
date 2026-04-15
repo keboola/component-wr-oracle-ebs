@@ -14,14 +14,8 @@ class WriteOperation(StrEnum):
     UPSERT = "upsert"
 
 
-class SourceConfig(BaseModel):
-    """Input table configuration (Keboola Storage → component)."""
-
-    input_table: str = ""
-
-
 class DestinationConfig(BaseModel):
-    """Target Oracle EBS table configuration."""
+    """Target Oracle EBS write configuration."""
 
     write_mode: WriteMode = WriteMode.PRESET
     module: str = ""
@@ -33,20 +27,31 @@ class DestinationConfig(BaseModel):
     primary_key: list[str] = Field(default_factory=list)
     column_mapping: dict[str, str] = Field(default_factory=dict)
     batch_size: int = 1000
+    submit_program: bool = True
+    wait_for_completion: bool = True
+    poll_interval: int = 10
+    poll_timeout: int = 600
 
 
 class Configuration(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
 
-    # Connection fields — flattened from configSchema "connection" block
+    # DB connection fields — flattened from configSchema "connection" block
     db_host: str = ""
     db_port: int = 1521
     db_service_name: str = ""
     db_user: str = Field(alias="#db_user", default="")
     db_password: str = Field(alias="#db_password", default="")
 
+    # ISG REST API connection (for TCA/AR writes)
+    rest_url: str = ""
+    rest_user: str = Field(alias="#rest_user", default="")
+    rest_password: str = Field(alias="#rest_password", default="")
+
+    # Default org_id for REST calls
+    default_org_id: int = 204
+
     # Row-level config
-    source: SourceConfig = Field(default_factory=SourceConfig)
     destination: DestinationConfig = Field(default_factory=DestinationConfig)
 
     debug: bool = False
@@ -76,6 +81,14 @@ class Configuration(BaseModel):
             raise UserException("'db_user' is required in connection settings.")
         if not self.db_password:
             raise UserException("'db_password' is required in connection settings.")
+
+    def validate_rest_connection(self) -> None:
+        if not self.rest_url:
+            raise UserException("'rest_url' is required for REST API write operations.")
+        if not self.rest_user:
+            raise UserException("'rest_user' is required for REST API authentication.")
+        if not self.rest_password:
+            raise UserException("'rest_password' is required for REST API authentication.")
 
     def validate_row(self) -> None:
         self.validate_connection()

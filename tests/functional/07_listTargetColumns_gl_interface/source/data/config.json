@@ -1,0 +1,17 @@
+{
+  "action": "listTargetColumns",
+  "parameters": {
+    "connection": {
+      "db_host": "PLACEHOLDER",
+      "db_port": 1521,
+      "db_service_name": "PLACEHOLDER",
+      "#db_user": "PLACEHOLDER",
+      "#db_password": "PLACEHOLDER"
+    },
+    "destination": {
+      "write_mode": "preset",
+      "module": "gl",
+      "entity": "gl_interface"
+    }
+  }
+}

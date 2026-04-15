@@ -4,7 +4,7 @@
   "properties": {
     "connection": {
       "type": "object",
-      "title": "Connection Settings",
+      "title": "Database Connection",
       "format": "grid-strict",
       "propertyOrder": 1,
       "required": ["db_host", "db_service_name", "#db_user", "#db_password"],
@@ -46,7 +46,8 @@
         },
         "#db_user": {
           "type": "string",
-          "title": "Username",
+          "title": "DB Username",
+          "description": "Database user with write access to EBS interface tables",
           "propertyOrder": 5,
           "options": {
             "grid_columns": 6
@@ -54,7 +55,7 @@
         },
         "#db_password": {
           "type": "string",
-          "title": "Password",
+          "title": "DB Password",
           "format": "password",
           "propertyOrder": 6,
           "options": {
@@ -62,6 +63,31 @@
           }
         }
       }
+    },
+    "rest_url": {
+      "type": "string",
+      "title": "EBS REST API URL",
+      "description": "ISG REST API base URL (e.g. http://host:8000/webservices/rest). Required for TCA and AR writes.",
+      "propertyOrder": 2
+    },
+    "#rest_user": {
+      "type": "string",
+      "title": "REST API Username",
+      "description": "EBS REST API user (typically SYSADMIN)",
+      "propertyOrder": 3
+    },
+    "#rest_password": {
+      "type": "string",
+      "title": "REST API Password",
+      "format": "password",
+      "propertyOrder": 4
+    },
+    "default_org_id": {
+      "type": "integer",
+      "title": "Default Org ID",
+      "description": "Default operating unit ID for REST API calls (e.g. 204 = Vision Operations)",
+      "default": 204,
+      "propertyOrder": 5
     }
   }
 }

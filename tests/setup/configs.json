@@ -1,0 +1,362 @@
+[
+  {
+    "name": "01_testConnection",
+    "description": "Sync action: test database and REST API connection",
+    "config": {
+      "action": "testConnection",
+      "parameters": {
+        "connection": {
+          "db_host": "PLACEHOLDER",
+          "db_port": 1521,
+          "db_service_name": "PLACEHOLDER",
+          "#db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "rest_url": "PLACEHOLDER",
+        "#rest_user": "PLACEHOLDER",
+        "#rest_password": "PLACEHOLDER"
+      }
+    }
+  },
+  {
+    "name": "02_listModules",
+    "description": "Sync action: list available EBS writer modules",
+    "config": {
+      "action": "listModules",
+      "parameters": {
+        "connection": {
+          "db_host": "PLACEHOLDER",
+          "db_port": 1521,
+          "db_service_name": "PLACEHOLDER",
+          "#db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        }
+      }
+    }
+  },
+  {
+    "name": "03_listOperatingUnits",
+    "description": "Sync action: list operating units from EBS",
+    "config": {
+      "action": "listOperatingUnits",
+      "parameters": {
+        "connection": {
+          "db_host": "PLACEHOLDER",
+          "db_port": 1521,
+          "db_service_name": "PLACEHOLDER",
+          "#db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        }
+      }
+    }
+  },
+  {
+    "name": "04_listLedgers",
+    "description": "Sync action: list GL ledgers from EBS",
+    "config": {
+      "action": "listLedgers",
+      "parameters": {
+        "connection": {
+          "db_host": "PLACEHOLDER",
+          "db_port": 1521,
+          "db_service_name": "PLACEHOLDER",
+          "#db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        }
+      }
+    }
+  },
+  {
+    "name": "05_listEntities_ap",
+    "description": "Sync action: list AP module write targets",
+    "config": {
+      "action": "listEntities",
+      "parameters": {
+        "connection": {
+          "db_host": "PLACEHOLDER",
+          "db_port": 1521,
+          "db_service_name": "PLACEHOLDER",
+          "#db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "module": "ap"
+        }
+      }
+    }
+  },
+  {
+    "name": "06_listEntities_tca",
+    "description": "Sync action: list TCA module write targets (REST-based)",
+    "config": {
+      "action": "listEntities",
+      "parameters": {
+        "connection": {
+          "db_host": "PLACEHOLDER",
+          "db_port": 1521,
+          "db_service_name": "PLACEHOLDER",
+          "#db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "module": "tca"
+        }
+      }
+    }
+  },
+  {
+    "name": "07_listTargetColumns_gl_interface",
+    "description": "Sync action: list GL_INTERFACE table columns",
+    "config": {
+      "action": "listTargetColumns",
+      "parameters": {
+        "connection": {
+          "db_host": "PLACEHOLDER",
+          "db_port": 1521,
+          "db_service_name": "PLACEHOLDER",
+          "#db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "preset",
+          "module": "gl",
+          "entity": "gl_interface"
+        }
+      }
+    }
+  },
+  {
+    "name": "08_write_tca_create_organization",
+    "description": "REST write: create a TCA organization party",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "connection": {
+          "db_host": "PLACEHOLDER",
+          "db_port": 1521,
+          "db_service_name": "PLACEHOLDER",
+          "#db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "rest_url": "PLACEHOLDER",
+        "#rest_user": "PLACEHOLDER",
+        "#rest_password": "PLACEHOLDER",
+        "destination": {
+          "write_mode": "preset",
+          "module": "tca",
+          "entity": "hz_create_organization",
+          "write_operation": "insert"
+        }
+      },
+      "storage": {
+        "input": {
+          "tables": [
+            {
+              "source": "in.c-test.tca_organizations",
+              "destination": "tca_organizations.csv"
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "09_write_tca_create_person",
+    "description": "REST write: create TCA person parties",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "connection": {
+          "db_host": "PLACEHOLDER",
+          "db_port": 1521,
+          "db_service_name": "PLACEHOLDER",
+          "#db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "rest_url": "PLACEHOLDER",
+        "#rest_user": "PLACEHOLDER",
+        "#rest_password": "PLACEHOLDER",
+        "destination": {
+          "write_mode": "preset",
+          "module": "tca",
+          "entity": "hz_create_person",
+          "write_operation": "insert"
+        }
+      },
+      "storage": {
+        "input": {
+          "tables": [
+            {
+              "source": "in.c-test.tca_persons",
+              "destination": "tca_persons.csv"
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "10_write_gl_interface",
+    "description": "Interface table write: GL journal entries (3-step flow)",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "connection": {
+          "db_host": "PLACEHOLDER",
+          "db_port": 1521,
+          "db_service_name": "PLACEHOLDER",
+          "#db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "preset",
+          "module": "gl",
+          "entity": "gl_interface",
+          "ledger_id": 1,
+          "write_operation": "insert",
+          "submit_program": true,
+          "wait_for_completion": true,
+          "batch_size": 100
+        }
+      },
+      "storage": {
+        "input": {
+          "tables": [
+            {
+              "source": "in.c-test.gl_journal_entries",
+              "destination": "gl_journal_entries.csv"
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "11_write_gl_interface_no_submit",
+    "description": "Interface table write: GL journal entries — INSERT only, skip concurrent program",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "connection": {
+          "db_host": "PLACEHOLDER",
+          "db_port": 1521,
+          "db_service_name": "PLACEHOLDER",
+          "#db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "preset",
+          "module": "gl",
+          "entity": "gl_interface",
+          "ledger_id": 1,
+          "write_operation": "insert",
+          "submit_program": false,
+          "batch_size": 100
+        }
+      },
+      "storage": {
+        "input": {
+          "tables": [
+            {
+              "source": "in.c-test.gl_journal_entries",
+              "destination": "gl_journal_entries.csv"
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "12_error_unknown_preset",
+    "description": "Error: unknown module/entity combination should fail (exit 1)",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "connection": {
+          "db_host": "PLACEHOLDER",
+          "db_port": 1521,
+          "db_service_name": "PLACEHOLDER",
+          "#db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "preset",
+          "module": "ap",
+          "entity": "nonexistent_entity"
+        }
+      },
+      "storage": {
+        "input": {
+          "tables": [
+            {
+              "source": "in.c-test.dummy",
+              "destination": "dummy.csv"
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "13_error_missing_module",
+    "description": "Error: preset with empty module should fail (exit 1)",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "connection": {
+          "db_host": "PLACEHOLDER",
+          "db_port": 1521,
+          "db_service_name": "PLACEHOLDER",
+          "#db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "preset",
+          "module": "",
+          "entity": ""
+        }
+      },
+      "storage": {
+        "input": {
+          "tables": [
+            {
+              "source": "in.c-test.dummy",
+              "destination": "dummy.csv"
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "14_error_missing_rest_config",
+    "description": "Error: TCA write without REST credentials should fail (exit 1)",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "connection": {
+          "db_host": "PLACEHOLDER",
+          "db_port": 1521,
+          "db_service_name": "PLACEHOLDER",
+          "#db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "preset",
+          "module": "tca",
+          "entity": "hz_create_organization"
+        }
+      },
+      "storage": {
+        "input": {
+          "tables": [
+            {
+              "source": "in.c-test.tca_organizations",
+              "destination": "tca_organizations.csv"
+            }
+          ]
+        }
+      }
+    }
+  }
+]

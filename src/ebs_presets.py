@@ -1,10 +1,11 @@
 """Oracle EBS write-target presets per module/entity.
 
-Each preset defines the target interface or staging table used by Oracle EBS
-for data import, along with required columns and optional org/ledger awareness.
+Two write methods:
+  - interface_table: Bulk INSERT into staging table → submit concurrent program → check status
+  - rest_api: Synchronous ISG REST API calls (one record per call)
 
-Oracle EBS uses **interface tables** as the standard mechanism for loading data.
-Concurrent programs then process these staging rows into the base tables.
+Interface tables use Oracle's Open Interface pattern; concurrent programs
+process the staging data into EBS base tables.
 """
 
 from __future__ import annotations
@@ -16,44 +17,59 @@ MODULE_LABELS: dict[str, str] = {
     "po": "Purchasing (PO)",
     "inv": "Inventory (INV)",
     "om": "Order Management (OM)",
+    "tca": "Trading Community (TCA)",
 }
 
 PRESETS: dict[str, dict[str, dict]] = {
+    # ── AP — Interface Tables ─────────────────────────────────────
     "ap": {
         "ap_invoices_interface": {
             "name": "AP Invoices Interface",
+            "write_method": "interface_table",
             "target_table": "APPS.AP_INVOICES_INTERFACE",
             "required_columns": [
-                "INVOICE_ID",
                 "INVOICE_NUM",
                 "INVOICE_DATE",
                 "VENDOR_ID",
                 "INVOICE_AMOUNT",
                 "INVOICE_CURRENCY_CODE",
-                "SOURCE",
             ],
             "optional_columns": [
-                "DESCRIPTION",
                 "INVOICE_TYPE_LOOKUP_CODE",
+                "DESCRIPTION",
                 "GL_DATE",
                 "PAYMENT_METHOD_CODE",
-                "PAY_GROUP_LOOKUP_CODE",
                 "TERMS_ID",
+                "VENDOR_SITE_ID",
                 "ORG_ID",
+                "GROUP_ID",
             ],
             "default_primary_key": ["INVOICE_ID"],
             "default_values": {
-                "SOURCE": "KEBOOLA",
+                "SOURCE": "Keboola",
+            },
+            "sequence_columns": {
+                "INVOICE_ID": "APPS.AP_INVOICES_INTERFACE_S",
+            },
+            "concurrent_program": {
+                "application": "SQLAP",
+                "program": "APXIIMPT",
+                "description": "Payables Open Interface Import",
+                "arguments": ["Keboola", "", "", "", "", "", "N", "N", "N", "N"],
+            },
+            "status_check": {
+                "group_column": "GROUP_ID",
+                "status_column": "STATUS",
             },
             "multi_org": True,
             "uses_ledger": False,
         },
         "ap_invoice_lines_interface": {
             "name": "AP Invoice Lines Interface",
+            "write_method": "interface_table",
             "target_table": "APPS.AP_INVOICE_LINES_INTERFACE",
             "required_columns": [
                 "INVOICE_ID",
-                "INVOICE_LINE_ID",
                 "LINE_NUMBER",
                 "LINE_TYPE_LOOKUP_CODE",
                 "AMOUNT",
@@ -67,54 +83,56 @@ PRESETS: dict[str, dict[str, dict]] = {
             ],
             "default_primary_key": ["INVOICE_ID", "INVOICE_LINE_ID"],
             "default_values": {},
+            "sequence_columns": {
+                "INVOICE_LINE_ID": "APPS.AP_INVOICE_LINES_INTERFACE_S",
+            },
+            "concurrent_program": None,  # processed by APXIIMPT on header
+            "status_check": None,
             "multi_org": True,
             "uses_ledger": False,
         },
     },
+    # ── AR — REST API ─────────────────────────────────────────────
     "ar": {
-        "ra_interface_lines": {
-            "name": "AR Interface Lines",
-            "target_table": "APPS.RA_INTERFACE_LINES_ALL",
+        "ar_invoice_create": {
+            "name": "AR Invoice (Create via REST)",
+            "write_method": "rest_api",
+            "rest_service": "create_ar_invoice",
             "required_columns": [
-                "INTERFACE_LINE_ID",
-                "INTERFACE_LINE_CONTEXT",
-                "INTERFACE_LINE_ATTRIBUTE1",
-                "BATCH_SOURCE_NAME",
-                "LINE_TYPE",
-                "AMOUNT",
-                "CURRENCY_CODE",
+                "BILL_TO_CUSTOMER_ID",
+                "CUST_TRX_TYPE_ID",
+                "TRX_DATE",
+                "TRX_CURRENCY",
             ],
             "optional_columns": [
-                "DESCRIPTION",
-                "ORIG_SYSTEM_BILL_CUSTOMER_ID",
-                "ORIG_SYSTEM_BILL_ADDRESS_ID",
-                "CUST_TRX_TYPE_ID",
+                "BILL_TO_SITE_USE_ID",
                 "GL_DATE",
-                "TRX_DATE",
-                "ORG_ID",
+                "TERM_ID",
+                "BATCH_SOURCE_ID",
+                "QUANTITY_INVOICED",
+                "UNIT_SELLING_PRICE",
+                "LINE_DESCRIPTION",
             ],
-            "default_primary_key": ["INTERFACE_LINE_ID"],
+            "default_primary_key": [],
             "default_values": {
-                "BATCH_SOURCE_NAME": "KEBOOLA",
+                "BATCH_SOURCE_ID": "3021",
             },
+            "response_id_field": "CUSTOMER_TRX_ID",
             "multi_org": True,
             "uses_ledger": False,
         },
     },
+    # ── GL — Interface Tables ─────────────────────────────────────
     "gl": {
         "gl_interface": {
             "name": "GL Journal Interface",
+            "write_method": "interface_table",
             "target_table": "APPS.GL_INTERFACE",
             "required_columns": [
-                "STATUS",
                 "SET_OF_BOOKS_ID",
                 "ACCOUNTING_DATE",
                 "CURRENCY_CODE",
-                "DATE_CREATED",
-                "CREATED_BY",
-                "ACTUAL_FLAG",
                 "USER_JE_CATEGORY_NAME",
-                "USER_JE_SOURCE_NAME",
                 "ENTERED_DR",
                 "ENTERED_CR",
             ],
@@ -137,18 +155,32 @@ PRESETS: dict[str, dict[str, dict]] = {
             "default_values": {
                 "STATUS": "NEW",
                 "ACTUAL_FLAG": "A",
-                "USER_JE_SOURCE_NAME": "KEBOOLA",
+                "USER_JE_SOURCE_NAME": "Keboola",
+                "CREATED_BY": "0",
+                "DATE_CREATED": "SYSDATE",
+            },
+            "sequence_columns": {},
+            "concurrent_program": {
+                "application": "SQLGL",
+                "program": "GLLEZL",
+                "description": "Journal Import",
+                "arguments": ["", "", "", "", "", "", "", ""],
+            },
+            "status_check": {
+                "group_column": "GROUP_ID",
+                "status_column": "STATUS",
             },
             "multi_org": False,
             "uses_ledger": True,
         },
     },
+    # ── PO — Interface Tables ─────────────────────────────────────
     "po": {
         "po_headers_interface": {
             "name": "PO Headers Interface",
+            "write_method": "interface_table",
             "target_table": "APPS.PO_HEADERS_INTERFACE",
             "required_columns": [
-                "INTERFACE_HEADER_ID",
                 "ACTION",
                 "DOCUMENT_TYPE_CODE",
                 "VENDOR_ID",
@@ -165,17 +197,31 @@ PRESETS: dict[str, dict[str, dict]] = {
             ],
             "default_primary_key": ["INTERFACE_HEADER_ID"],
             "default_values": {
+                "PROCESS_CODE": "PENDING",
                 "ACTION": "ORIGINAL",
                 "DOCUMENT_TYPE_CODE": "STANDARD",
+            },
+            "sequence_columns": {
+                "INTERFACE_HEADER_ID": "APPS.PO_HEADERS_INTERFACE_S",
+            },
+            "concurrent_program": {
+                "application": "PO",
+                "program": "POXPOPDOI",
+                "description": "Import Standard Purchase Orders",
+                "arguments": ["", "", "", "", "", "", "", "", "", ""],
+            },
+            "status_check": {
+                "group_column": "BATCH_ID",
+                "status_column": "PROCESS_CODE",
             },
             "multi_org": True,
             "uses_ledger": False,
         },
         "po_lines_interface": {
             "name": "PO Lines Interface",
+            "write_method": "interface_table",
             "target_table": "APPS.PO_LINES_INTERFACE",
             "required_columns": [
-                "INTERFACE_LINE_ID",
                 "INTERFACE_HEADER_ID",
                 "LINE_NUM",
                 "ITEM_DESCRIPTION",
@@ -187,32 +233,32 @@ PRESETS: dict[str, dict[str, dict]] = {
                 "UNIT_OF_MEASURE",
                 "CATEGORY_ID",
                 "SHIP_TO_ORGANIZATION_ID",
-                "SHIP_TO_LOCATION_ID",
                 "LINE_TYPE_ID",
             ],
             "default_primary_key": ["INTERFACE_LINE_ID"],
             "default_values": {},
+            "sequence_columns": {
+                "INTERFACE_LINE_ID": "APPS.PO_LINES_INTERFACE_S",
+            },
+            "concurrent_program": None,  # processed by POXPOPDOI on header
+            "status_check": None,
             "multi_org": False,
             "uses_ledger": False,
         },
     },
+    # ── INV — Interface Tables ────────────────────────────────────
     "inv": {
         "mtl_transactions_interface": {
             "name": "Inventory Transactions Interface",
+            "write_method": "interface_table",
             "target_table": "APPS.MTL_TRANSACTIONS_INTERFACE",
             "required_columns": [
-                "TRANSACTION_INTERFACE_ID",
                 "TRANSACTION_TYPE_ID",
                 "INVENTORY_ITEM_ID",
                 "ORGANIZATION_ID",
                 "TRANSACTION_QUANTITY",
                 "TRANSACTION_UOM",
                 "TRANSACTION_DATE",
-                "SOURCE_CODE",
-                "SOURCE_LINE_ID",
-                "SOURCE_HEADER_ID",
-                "PROCESS_FLAG",
-                "TRANSACTION_MODE",
             ],
             "optional_columns": [
                 "SUBINVENTORY_CODE",
@@ -220,20 +266,37 @@ PRESETS: dict[str, dict[str, dict]] = {
                 "TRANSFER_ORGANIZATION",
                 "TRANSFER_SUBINVENTORY",
                 "REASON_ID",
+                "SOURCE_HEADER_ID",
+                "SOURCE_LINE_ID",
             ],
             "default_primary_key": ["TRANSACTION_INTERFACE_ID"],
             "default_values": {
-                "SOURCE_CODE": "KEBOOLA",
+                "SOURCE_CODE": "Keboola",
                 "PROCESS_FLAG": "1",
                 "TRANSACTION_MODE": "3",
+            },
+            "sequence_columns": {
+                "TRANSACTION_INTERFACE_ID": "APPS.MTL_MATERIAL_TRANSACTIONS_S",
+            },
+            "concurrent_program": {
+                "application": "INV",
+                "program": "INCTCM",
+                "description": "Process transaction interface",
+                "arguments": ["", "", "", "", ""],
+            },
+            "status_check": {
+                "group_column": "SOURCE_CODE",
+                "status_column": "PROCESS_FLAG",
             },
             "multi_org": True,
             "uses_ledger": False,
         },
     },
+    # ── OM — Interface Tables ─────────────────────────────────────
     "om": {
         "oe_headers_iface": {
             "name": "Sales Order Headers Interface",
+            "write_method": "interface_table",
             "target_table": "APPS.OE_HEADERS_IFACE_ALL",
             "required_columns": [
                 "ORDER_SOURCE_ID",
@@ -248,37 +311,75 @@ PRESETS: dict[str, dict[str, dict]] = {
                 "TRANSACTIONAL_CURR_CODE",
                 "PRICE_LIST_ID",
                 "SHIP_FROM_ORG_ID",
-                "SHIP_TO_ORG_ID",
-                "INVOICE_TO_ORG_ID",
             ],
             "default_primary_key": ["ORIG_SYS_DOCUMENT_REF"],
             "default_values": {
                 "OPERATION_CODE": "CREATE",
             },
+            "sequence_columns": {},
+            "concurrent_program": {
+                "application": "ONT",
+                "program": "OEOIMP",
+                "description": "Order Import",
+                "arguments": ["", "", "", "", "", "", "", "", "", ""],
+            },
+            "status_check": None,
             "multi_org": True,
             "uses_ledger": False,
         },
-        "oe_lines_iface": {
-            "name": "Sales Order Lines Interface",
-            "target_table": "APPS.OE_LINES_IFACE_ALL",
-            "required_columns": [
-                "ORDER_SOURCE_ID",
-                "ORIG_SYS_DOCUMENT_REF",
-                "ORIG_SYS_LINE_REF",
-                "OPERATION_CODE",
-                "INVENTORY_ITEM_ID",
-                "ORDERED_QUANTITY",
-            ],
+    },
+    # ── TCA — REST API ────────────────────────────────────────────
+    "tca": {
+        "hz_create_organization": {
+            "name": "Create Organization (TCA Party)",
+            "write_method": "rest_api",
+            "rest_service": "create_organization",
+            "required_columns": ["ORGANIZATION_NAME"],
             "optional_columns": [
-                "UNIT_SELLING_PRICE",
-                "UNIT_LIST_PRICE",
-                "SCHEDULE_SHIP_DATE",
-                "SHIP_FROM_ORG_ID",
+                "DUNS_NUMBER_C",
+                "JGZZ_FISCAL_CODE",
+                "TAX_REFERENCE",
+                "SIC_CODE",
+                "CATEGORY_CODE",
+                "URL",
             ],
-            "default_primary_key": ["ORIG_SYS_DOCUMENT_REF", "ORIG_SYS_LINE_REF"],
-            "default_values": {
-                "OPERATION_CODE": "CREATE",
-            },
+            "default_primary_key": [],
+            "default_values": {},
+            "response_id_field": "X_PARTY_ID",
+            "multi_org": False,
+            "uses_ledger": False,
+        },
+        "hz_create_person": {
+            "name": "Create Person (TCA Party)",
+            "write_method": "rest_api",
+            "rest_service": "create_person",
+            "required_columns": ["PERSON_FIRST_NAME", "PERSON_LAST_NAME"],
+            "optional_columns": [
+                "PERSON_MIDDLE_NAME",
+                "PERSON_TITLE",
+                "PERSON_NAME_SUFFIX",
+                "KNOWN_AS",
+            ],
+            "default_primary_key": [],
+            "default_values": {},
+            "response_id_field": "X_PARTY_ID",
+            "multi_org": False,
+            "uses_ledger": False,
+        },
+        "hz_create_cust_account": {
+            "name": "Create Customer Account",
+            "write_method": "rest_api",
+            "rest_service": "create_cust_account",
+            "required_columns": ["ACCOUNT_NAME"],
+            "optional_columns": [
+                "ACCOUNT_NUMBER",
+                "CUSTOMER_CLASS_CODE",
+                "PERSON_FIRST_NAME",
+                "PERSON_LAST_NAME",
+            ],
+            "default_primary_key": [],
+            "default_values": {},
+            "response_id_field": "X_CUST_ACCOUNT_ID",
             "multi_org": False,
             "uses_ledger": False,
         },
