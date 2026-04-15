@@ -1,1 +1,146 @@
-{}
+{
+  "type": "object",
+  "title": "Write Row",
+  "required": ["destination"],
+  "properties": {
+    "destination": {
+      "type": "object",
+      "title": "Destination",
+      "format": "collapse",
+      "propertyOrder": 1,
+      "properties": {
+        "write_mode": {
+          "type": "string",
+          "title": "Write Mode",
+          "enum": ["preset", "custom"],
+          "default": "preset",
+          "propertyOrder": 1
+        },
+        "module": {
+          "type": "string",
+          "title": "EBS Module",
+          "format": "select",
+          "enum": [],
+          "propertyOrder": 2,
+          "options": {
+            "async": {
+              "label": "Load Modules",
+              "action": "listModules",
+              "autoload": true
+            },
+            "dependencies": {
+              "destination.write_mode": "preset"
+            }
+          }
+        },
+        "entity": {
+          "type": "string",
+          "title": "Target Entity (Interface Table)",
+          "format": "select",
+          "enum": [],
+          "propertyOrder": 3,
+          "options": {
+            "async": {
+              "label": "Load Entities",
+              "action": "listEntities"
+            },
+            "dependencies": {
+              "destination.write_mode": "preset"
+            }
+          }
+        },
+        "org_id": {
+          "type": "string",
+          "title": "Operating Unit (Org ID)",
+          "format": "select",
+          "enum": [],
+          "propertyOrder": 4,
+          "options": {
+            "async": {
+              "label": "Load Operating Units",
+              "action": "listOperatingUnits"
+            },
+            "dependencies": {
+              "destination.write_mode": "preset"
+            }
+          }
+        },
+        "ledger_id": {
+          "type": "string",
+          "title": "Ledger",
+          "format": "select",
+          "enum": [],
+          "propertyOrder": 5,
+          "options": {
+            "async": {
+              "label": "Load Ledgers",
+              "action": "listLedgers"
+            },
+            "dependencies": {
+              "destination.write_mode": "preset",
+              "destination.module": "gl"
+            }
+          }
+        },
+        "target_table": {
+          "type": "string",
+          "title": "Target Table",
+          "description": "Full Oracle table name (e.g. APPS.MY_CUSTOM_TABLE)",
+          "propertyOrder": 6,
+          "options": {
+            "dependencies": {
+              "destination.write_mode": "custom"
+            }
+          }
+        },
+        "write_operation": {
+          "type": "string",
+          "title": "Write Operation",
+          "enum": ["insert", "upsert"],
+          "default": "insert",
+          "description": "INSERT adds all rows. UPSERT updates existing rows by primary key and inserts new ones.",
+          "propertyOrder": 7
+        },
+        "primary_key": {
+          "type": "array",
+          "title": "Primary Key Columns",
+          "description": "Required for upsert. Used to match existing rows in the target table.",
+          "format": "select",
+          "items": {
+            "type": "string",
+            "enum": []
+          },
+          "uniqueItems": true,
+          "propertyOrder": 8,
+          "options": {
+            "tags": true,
+            "async": {
+              "label": "Load Target Columns",
+              "action": "listTargetColumns"
+            },
+            "dependencies": {
+              "destination.write_operation": "upsert"
+            }
+          }
+        },
+        "column_mapping": {
+          "type": "object",
+          "title": "Column Mapping",
+          "description": "Map input column names to target Oracle column names. Leave empty if column names already match.",
+          "format": "grid",
+          "propertyOrder": 9,
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "batch_size": {
+          "type": "integer",
+          "title": "Batch Size",
+          "description": "Number of rows per INSERT/MERGE batch (default 1000).",
+          "default": 1000,
+          "propertyOrder": 10
+        }
+      }
+    }
+  }
+}

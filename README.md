@@ -1,84 +1,70 @@
-wr-oracle-ebs
-=============
+# Oracle E-Business Suite Writer
 
-Description
+Write data to Oracle E-Business Suite via direct database connection using the `oracledb` thin driver.
 
-**Table of Contents:**
+## Features
 
-[TOC]
+| Feature | Description |
+|---|---|
+| Preset Mode | Select EBS module and interface table from dropdowns — component handles column validation and defaults |
+| Custom Mode | Write to any Oracle table with full flexibility |
+| INSERT / UPSERT | Simple insert or MERGE (update existing + insert new) by primary key |
+| Column Mapping | Rename input columns to match Oracle target columns |
+| Multi-Org Support | Automatically inject `ORG_ID` for multi-org interface tables |
+| GL Ledger Support | Automatically inject `LEDGER_ID` for General Ledger interface |
+| Sync Actions | Test connection, list operating units, list ledgers, list modules, list entities, list target columns |
 
-Functionality Notes
-===================
+## Supported EBS Modules (Interface Tables)
 
-Prerequisites
-=============
+- **AP** — Accounts Payable (`AP_INVOICES_INTERFACE`, `AP_INVOICE_LINES_INTERFACE`)
+- **AR** — Accounts Receivable (`RA_INTERFACE_LINES_ALL`)
+- **GL** — General Ledger (`GL_INTERFACE`)
+- **PO** — Purchasing (`PO_HEADERS_INTERFACE`, `PO_LINES_INTERFACE`)
+- **INV** — Inventory (`MTL_TRANSACTIONS_INTERFACE`)
+- **OM** — Order Management (`OE_HEADERS_IFACE_ALL`, `OE_LINES_IFACE_ALL`)
 
-Ensure you have the necessary API token, register the application, etc.
+## Configuration
 
-Features
-========
+### Connection Settings (configSchema)
 
-| **Feature**             | **Description**                               |
-|-------------------------|-----------------------------------------------|
-| Generic UI Form         | Dynamic UI form for easy configuration.       |
-| Row-Based Configuration | Allows structuring the configuration in rows. |
-| OAuth                   | OAuth authentication enabled.                 |
-| Incremental Loading     | Fetch data in new increments.                 |
-| Backfill Mode           | Supports seamless backfill setup.             |
-| Date Range Filter       | Specify the date range for data retrieval.    |
+| Parameter | Description |
+|---|---|
+| `db_host` | Oracle database server hostname or IP |
+| `db_port` | Port (default: 1521) |
+| `db_service_name` | Oracle service name (e.g. `ebs_EBSDB`) |
+| `#db_user` | Database username (encrypted) |
+| `#db_password` | Database password (encrypted) |
 
-Supported Endpoints
-===================
+### Write Row (configRowSchema)
 
-If you need additional endpoints, please submit your request to
-[ideas.keboola.com](https://ideas.keboola.com/).
+| Parameter | Description |
+|---|---|
+| `write_mode` | `preset` (guided) or `custom` (any table) |
+| `module` | EBS module code (preset mode) |
+| `entity` | Interface table entity (preset mode) |
+| `org_id` | Operating Unit ID for multi-org tables |
+| `ledger_id` | Ledger ID for GL interface |
+| `target_table` | Full Oracle table name (custom mode) |
+| `write_operation` | `insert` or `upsert` (MERGE) |
+| `primary_key` | Primary key columns (required for upsert) |
+| `column_mapping` | Map input columns to target columns |
+| `batch_size` | Rows per batch (default: 1000) |
 
-Configuration
-=============
+## Development
 
-Param 1
--------
-Details about parameter 1.
-
-Param 2
--------
-Details about parameter 2.
-
-Output
-======
-
-Provides a list of tables, foreign keys, and schema.
-
-Development
------------
-
-To customize the local data folder path, replace the `CUSTOM_FOLDER` placeholder with your desired path in the `docker-compose.yml` file:
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    volumes:
-      - ./:/code
-      - ./CUSTOM_FOLDER:/data
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Clone this repository, initialize the workspace, and run the component using the following
-commands:
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-git clone  component-wr-oracle-ebs
+```bash
+git clone https://github.com/keboola/component-wr-oracle-ebs
 cd component-wr-oracle-ebs
 docker-compose build
 docker-compose run --rm dev
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
 
-Run the test suite and perform lint checks using this command:
+### Run tests
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```bash
 docker-compose run --rm test
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
 
-Integration
-===========
+## Deployment
 
-For details about deployment and integration with Keboola, refer to the
-[deployment section of the developer
-documentation](https://developers.keboola.com/extend/component/deployment/).
+See [Keboola Developer Documentation](https://developers.keboola.com/extend/component/deployment/).

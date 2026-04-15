@@ -1,19 +1,67 @@
 {
   "type": "object",
-  "title": "extractor configuration",
-  "required": [
-    "print_hello"
-  ],
+  "title": "Oracle EBS Writer — Connection Settings",
   "properties": {
-    "print_hello": {
-      "type": "boolean",
-      "title": "Print Hello",
-      "propertyOrder": 1
-    },
-    "debug": {
-      "type": "boolean",
-      "title": "Debug",
-      "propertyOrder": 2
+    "connection": {
+      "type": "object",
+      "title": "Connection Settings",
+      "format": "grid-strict",
+      "propertyOrder": 1,
+      "required": ["db_host", "db_service_name", "#db_user", "#db_password"],
+      "properties": {
+        "db_host": {
+          "type": "string",
+          "title": "Database Host",
+          "description": "Hostname or IP address of the Oracle database server",
+          "propertyOrder": 1,
+          "options": {
+            "grid_columns": 8
+          }
+        },
+        "db_port": {
+          "type": "integer",
+          "title": "Port",
+          "default": 1521,
+          "propertyOrder": 2,
+          "options": {
+            "grid_columns": 2
+          }
+        },
+        "test_connection": {
+          "type": "button",
+          "format": "test-connection",
+          "propertyOrder": 3,
+          "options": {
+            "grid_columns": 2
+          }
+        },
+        "db_service_name": {
+          "type": "string",
+          "title": "Service Name",
+          "description": "Oracle service name (e.g. ebs_EBSDB)",
+          "propertyOrder": 4,
+          "options": {
+            "grid_columns": 12
+          }
+        },
+        "#db_user": {
+          "type": "string",
+          "title": "Username",
+          "propertyOrder": 5,
+          "options": {
+            "grid_columns": 6
+          }
+        },
+        "#db_password": {
+          "type": "string",
+          "title": "Password",
+          "format": "password",
+          "propertyOrder": 6,
+          "options": {
+            "grid_columns": 6
+          }
+        }
+      }
     }
   }
 }
