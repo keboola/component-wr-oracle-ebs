@@ -31,6 +31,18 @@ class OracleEBSClient:
         try:
             return oracledb.connect(user=self.user, password=self.password, dsn=self.dsn)
         except oracledb.DatabaseError as e:
+            msg = str(e)
+            if "DPY-3015" in msg:
+                raise UserException(
+                    f"Cannot connect to Oracle EBS at {self.dsn}: the database user '{self.user}' "
+                    f"has an old password hash (verifier type not supported by the thin driver).\n"
+                    f"Fix on the Oracle server side — either:\n"
+                    f"  1. Reset the password to regenerate the hash:\n"
+                    f"     ALTER USER {self.user} IDENTIFIED BY <same-or-new-password>;\n"
+                    f"  2. Allow older verifiers in sqlnet.ora:\n"
+                    f"     SQLNET.ALLOWED_LOGON_VERSION_SERVER = 11  (or 12)\n"
+                    f"Original error: {e}"
+                ) from e
             raise UserException(f"Cannot connect to Oracle EBS at {self.dsn}: {e}") from e
 
     # ── Connection & Metadata ─────────────────────────────────────
