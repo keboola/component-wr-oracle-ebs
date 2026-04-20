@@ -69,13 +69,17 @@ class EBSRestClient:
     # ── TCA Operations ────────────────────────────────────────────
 
     def create_organization(self, org_rec: dict) -> dict:
-        """Create a TCA organization (party)."""
+        """Create a TCA organization (party).
+
+        NOTE: Oracle EBS ISG is sensitive to JSON key order — user-provided fields
+        MUST come before CREATED_BY_MODULE or the API returns X_RETURN_STATUS=E.
+        """
         payload = {
             "InputParameters": {
                 "P_INIT_MSG_LIST": "T",
                 "P_ORGANIZATION_REC": {
-                    "CREATED_BY_MODULE": "TCA_V2_API",
                     **org_rec,
+                    "CREATED_BY_MODULE": "TCA_V2_API",
                 },
             }
         }
@@ -87,8 +91,8 @@ class EBSRestClient:
             "InputParameters": {
                 "P_INIT_MSG_LIST": "T",
                 "P_PERSON_REC": {
-                    "CREATED_BY_MODULE": "TCA_V2_API",
                     **person_rec,
+                    "CREATED_BY_MODULE": "TCA_V2_API",
                 },
             }
         }
@@ -100,12 +104,12 @@ class EBSRestClient:
             "InputParameters": {
                 "P_INIT_MSG_LIST": "T",
                 "P_CUST_ACCOUNT_REC": {
-                    "CREATED_BY_MODULE": "TCA_V2_API",
                     **account_rec,
+                    "CREATED_BY_MODULE": "TCA_V2_API",
                 },
                 "P_PERSON_REC": {
-                    "CREATED_BY_MODULE": "TCA_V2_API",
                     **(person_rec or {}),
+                    "CREATED_BY_MODULE": "TCA_V2_API",
                 },
                 "P_CREATE_PROFILE_AMT": "F",
             }
@@ -118,8 +122,8 @@ class EBSRestClient:
             "InputParameters": {
                 "P_INIT_MSG_LIST": "T",
                 "P_PARTY_SITE_REC": {
-                    "CREATED_BY_MODULE": "TCA_V2_API",
                     **party_site_rec,
+                    "CREATED_BY_MODULE": "TCA_V2_API",
                 },
                 "P_LOCATION_REC": {
                     **location_rec,

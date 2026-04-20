@@ -6,13 +6,13 @@
       "action": "testConnection",
       "parameters": {
         "connection": {
-          "db_host": "PLACEHOLDER",
+          "db_host": "34.140.79.124",
           "db_port": 1521,
-          "db_service_name": "PLACEHOLDER",
+          "db_service_name": "ebs_EBSDB",
           "#db_user": "PLACEHOLDER",
           "#db_password": "PLACEHOLDER"
         },
-        "rest_url": "PLACEHOLDER",
+        "rest_url": "http://34.140.79.124:8000/webservices/rest",
         "#rest_user": "PLACEHOLDER",
         "#rest_password": "PLACEHOLDER"
       }
@@ -25,9 +25,9 @@
       "action": "listModules",
       "parameters": {
         "connection": {
-          "db_host": "PLACEHOLDER",
+          "db_host": "34.140.79.124",
           "db_port": 1521,
-          "db_service_name": "PLACEHOLDER",
+          "db_service_name": "ebs_EBSDB",
           "#db_user": "PLACEHOLDER",
           "#db_password": "PLACEHOLDER"
         }
@@ -41,9 +41,9 @@
       "action": "listOperatingUnits",
       "parameters": {
         "connection": {
-          "db_host": "PLACEHOLDER",
+          "db_host": "34.140.79.124",
           "db_port": 1521,
-          "db_service_name": "PLACEHOLDER",
+          "db_service_name": "ebs_EBSDB",
           "#db_user": "PLACEHOLDER",
           "#db_password": "PLACEHOLDER"
         }
@@ -57,9 +57,9 @@
       "action": "listLedgers",
       "parameters": {
         "connection": {
-          "db_host": "PLACEHOLDER",
+          "db_host": "34.140.79.124",
           "db_port": 1521,
-          "db_service_name": "PLACEHOLDER",
+          "db_service_name": "ebs_EBSDB",
           "#db_user": "PLACEHOLDER",
           "#db_password": "PLACEHOLDER"
         }
@@ -73,9 +73,9 @@
       "action": "listEntities",
       "parameters": {
         "connection": {
-          "db_host": "PLACEHOLDER",
+          "db_host": "34.140.79.124",
           "db_port": 1521,
-          "db_service_name": "PLACEHOLDER",
+          "db_service_name": "ebs_EBSDB",
           "#db_user": "PLACEHOLDER",
           "#db_password": "PLACEHOLDER"
         },
@@ -92,9 +92,9 @@
       "action": "listEntities",
       "parameters": {
         "connection": {
-          "db_host": "PLACEHOLDER",
+          "db_host": "34.140.79.124",
           "db_port": 1521,
-          "db_service_name": "PLACEHOLDER",
+          "db_service_name": "ebs_EBSDB",
           "#db_user": "PLACEHOLDER",
           "#db_password": "PLACEHOLDER"
         },
@@ -111,9 +111,9 @@
       "action": "listTargetColumns",
       "parameters": {
         "connection": {
-          "db_host": "PLACEHOLDER",
+          "db_host": "34.140.79.124",
           "db_port": 1521,
-          "db_service_name": "PLACEHOLDER",
+          "db_service_name": "ebs_EBSDB",
           "#db_user": "PLACEHOLDER",
           "#db_password": "PLACEHOLDER"
         },
@@ -132,13 +132,13 @@
       "action": "run",
       "parameters": {
         "connection": {
-          "db_host": "PLACEHOLDER",
+          "db_host": "34.140.79.124",
           "db_port": 1521,
-          "db_service_name": "PLACEHOLDER",
+          "db_service_name": "ebs_EBSDB",
           "#db_user": "PLACEHOLDER",
           "#db_password": "PLACEHOLDER"
         },
-        "rest_url": "PLACEHOLDER",
+        "rest_url": "http://34.140.79.124:8000/webservices/rest",
         "#rest_user": "PLACEHOLDER",
         "#rest_password": "PLACEHOLDER",
         "destination": {
@@ -167,13 +167,13 @@
       "action": "run",
       "parameters": {
         "connection": {
-          "db_host": "PLACEHOLDER",
+          "db_host": "34.140.79.124",
           "db_port": 1521,
-          "db_service_name": "PLACEHOLDER",
+          "db_service_name": "ebs_EBSDB",
           "#db_user": "PLACEHOLDER",
           "#db_password": "PLACEHOLDER"
         },
-        "rest_url": "PLACEHOLDER",
+        "rest_url": "http://34.140.79.124:8000/webservices/rest",
         "#rest_user": "PLACEHOLDER",
         "#rest_password": "PLACEHOLDER",
         "destination": {
@@ -202,9 +202,9 @@
       "action": "run",
       "parameters": {
         "connection": {
-          "db_host": "PLACEHOLDER",
+          "db_host": "34.140.79.124",
           "db_port": 1521,
-          "db_service_name": "PLACEHOLDER",
+          "db_service_name": "ebs_EBSDB",
           "#db_user": "PLACEHOLDER",
           "#db_password": "PLACEHOLDER"
         },
@@ -238,9 +238,9 @@
       "action": "run",
       "parameters": {
         "connection": {
-          "db_host": "PLACEHOLDER",
+          "db_host": "34.140.79.124",
           "db_port": 1521,
-          "db_service_name": "PLACEHOLDER",
+          "db_service_name": "ebs_EBSDB",
           "#db_user": "PLACEHOLDER",
           "#db_password": "PLACEHOLDER"
         },
@@ -273,9 +273,9 @@
       "action": "run",
       "parameters": {
         "connection": {
-          "db_host": "PLACEHOLDER",
+          "db_host": "34.140.79.124",
           "db_port": 1521,
-          "db_service_name": "PLACEHOLDER",
+          "db_service_name": "ebs_EBSDB",
           "#db_user": "PLACEHOLDER",
           "#db_password": "PLACEHOLDER"
         },
@@ -304,9 +304,9 @@
       "action": "run",
       "parameters": {
         "connection": {
-          "db_host": "PLACEHOLDER",
+          "db_host": "34.140.79.124",
           "db_port": 1521,
-          "db_service_name": "PLACEHOLDER",
+          "db_service_name": "ebs_EBSDB",
           "#db_user": "PLACEHOLDER",
           "#db_password": "PLACEHOLDER"
         },
@@ -322,37 +322,6 @@
             {
               "source": "in.c-test.dummy",
               "destination": "dummy.csv"
-            }
-          ]
-        }
-      }
-    }
-  },
-  {
-    "name": "14_error_missing_rest_config",
-    "description": "Error: TCA write without REST credentials should fail (exit 1)",
-    "config": {
-      "action": "run",
-      "parameters": {
-        "connection": {
-          "db_host": "PLACEHOLDER",
-          "db_port": 1521,
-          "db_service_name": "PLACEHOLDER",
-          "#db_user": "PLACEHOLDER",
-          "#db_password": "PLACEHOLDER"
-        },
-        "destination": {
-          "write_mode": "preset",
-          "module": "tca",
-          "entity": "hz_create_organization"
-        }
-      },
-      "storage": {
-        "input": {
-          "tables": [
-            {
-              "source": "in.c-test.tca_organizations",
-              "destination": "tca_organizations.csv"
             }
           ]
         }

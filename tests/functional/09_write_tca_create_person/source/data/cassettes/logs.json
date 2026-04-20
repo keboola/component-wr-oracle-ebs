@@ -1,36 +1,42 @@
 {
-  "exit_code": 1,
-  "stderr": "Row 1 failed: {'PERSON_FIRST_NAME': 'John', 'PERSON_LAST_NAME': 'Doe', 'KNOWN_AS': 'Johnny'}\nEBS API error: EBS returned 12 error message(s). Check EBS logs for details.\nTraceback (most recent call last):\n  File \"src/component.py\", line 378, in <module>\n    comp.execute_action()\n    ~~~~~~~~~~~~~~~~~~~^^\n  File \"/Users/matyasjirat/VSCodeProjects/Keboola/component-wr-oracle-ebs/.venv/lib/python3.13/site-packages/keboola/component/base.py\", line 251, in execute_action\n    return self._do_execute_action()\n           ~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"/Users/matyasjirat/VSCodeProjects/Keboola/component-wr-oracle-ebs/.venv/lib/python3.13/site-packages/keboola/component/base.py\", line 265, in _do_execute_action\n    return action_method()\n  File \"src/component.py\", line 50, in run\n    self._write_preset(rows)\n    ~~~~~~~~~~~~~~~~~~^^^^^^\n  File \"src/component.py\", line 134, in _write_preset\n    self._write_rest_api(preset, rows)\n    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^\n  File \"src/component.py\", line 277, in _write_rest_api\n    result = self._call_rest_service(rest_client, service, row, org_id)\n  File \"src/component.py\", line 298, in _call_rest_service\n    return rest_client.create_person(row)\n           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^\n  File \"/Users/matyasjirat/VSCodeProjects/Keboola/component-wr-oracle-ebs/src/ebs_rest_client.py\", line 97, in create_person\n    return self.call_service(\"/hzparty/create_person/\", payload)\n           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/matyasjirat/VSCodeProjects/Keboola/component-wr-oracle-ebs/src/ebs_rest_client.py\", line 67, in call_service\n    raise UserException(f\"{prefix}: {msg}\")\nkeboola.component.exceptions.UserException: EBS API error: EBS returned 12 error message(s). Check EBS logs for details.\n",
+  "exit_code": null,
+  "stderr": "",
   "logs": [
     {
       "level": "INFO",
       "logger": "root",
       "message": "Reading input table: tca_persons.csv",
-      "timestamp": "2026-04-15T14:35:41.000Z"
+      "timestamp": "2026-04-20T13:26:50.577Z"
     },
     {
       "level": "INFO",
       "logger": "root",
       "message": "Read 2 rows with 3 columns from input",
-      "timestamp": "2026-04-15T14:35:41.000Z"
+      "timestamp": "2026-04-20T13:26:50.578Z"
     },
     {
       "level": "INFO",
       "logger": "root",
       "message": "Writing 2 rows via REST API (create_person)",
-      "timestamp": "2026-04-15T14:35:41.000Z"
+      "timestamp": "2026-04-20T13:26:50.578Z"
     },
     {
-      "level": "ERROR",
+      "level": "INFO",
       "logger": "root",
-      "message": "Row 1 failed: {'PERSON_FIRST_NAME': 'John', 'PERSON_LAST_NAME': 'Doe', 'KNOWN_AS': 'Johnny'}",
-      "timestamp": "2026-04-15T14:35:41.000Z"
+      "message": "Row 1: created X_PARTY_ID=479225",
+      "timestamp": "2026-04-20T13:26:50.832Z"
     },
     {
-      "level": "ERROR",
+      "level": "INFO",
       "logger": "root",
-      "message": "EBS API error: EBS returned 12 error message(s). Check EBS logs for details.\nTraceback (most recent call last):\n  File \"src/component.py\", line 378, in <module>\n    comp.execute_action()\n    ~~~~~~~~~~~~~~~~~~~^^\n  File \"/Users/matyasjirat/VSCodeProjects/Keboola/component-wr-oracle-ebs/.venv/lib/python3.13/site-packages/keboola/component/base.py\", line 251, in execute_action\n    return self._do_execute_action()\n           ~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"/Users/matyasjirat/VSCodeProjects/Keboola/component-wr-oracle-ebs/.venv/lib/python3.13/site-packages/keboola/component/base.py\", line 265, in _do_execute_action\n    return action_method()\n  File \"src/component.py\", line 50, in run\n    self._write_preset(rows)\n    ~~~~~~~~~~~~~~~~~~^^^^^^\n  File \"src/component.py\", line 134, in _write_preset\n    self._write_rest_api(preset, rows)\n    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^\n  File \"src/component.py\", line 277, in _write_rest_api\n    result = self._call_rest_service(rest_client, service, row, org_id)\n  File \"src/component.py\", line 298, in _call_rest_service\n    return rest_client.create_person(row)\n           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^\n  File \"/Users/matyasjirat/VSCodeProjects/Keboola/component-wr-oracle-ebs/src/ebs_rest_client.py\", line 97, in create_person\n    return self.call_service(\"/hzparty/create_person/\", payload)\n           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/matyasjirat/VSCodeProjects/Keboola/component-wr-oracle-ebs/src/ebs_rest_client.py\", line 67, in call_service\n    raise UserException(f\"{prefix}: {msg}\")\nkeboola.component.exceptions.UserException: EBS API error: EBS returned 12 error message(s). Check EBS logs for details.",
-      "timestamp": "2026-04-15T14:35:41.000Z"
+      "message": "Row 2: created X_PARTY_ID=479226",
+      "timestamp": "2026-04-20T13:26:51.078Z"
+    },
+    {
+      "level": "INFO",
+      "logger": "root",
+      "message": "REST write complete: 2 succeeded, 0 failed",
+      "timestamp": "2026-04-20T13:26:51.078Z"
     }
   ]
 }

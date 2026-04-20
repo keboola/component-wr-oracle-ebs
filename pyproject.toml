@@ -14,12 +14,17 @@ dependencies = [
 [dependency-groups]
 dev = [
     "freezegun>=1.5.1",
-    "keboola-datadirtest>=2.0.0",
+    "keboola-datadirtest>=0.0.0",
     "keboola-vcr>=0.0.0",
     "mock>=5.2.0",
+    "pre-commit>=4.5.0",
     "pytest>=9.0.2",
     "ruff>=0.15.2",
 ]
+
+[tool.uv.sources]
+keboola-datadirtest = { git = "https://github.com/keboola/datadirtest.git", rev = "82f0c083263ffba193dd304439243de55b3f70a9" }
+keboola-vcr = { git = "https://github.com/keboola/python-vcr-tests.git", rev = "aaa70504db8e6c687530868633f4a0135b717496" }
 
 [tool.ruff]
 line-length = 120
