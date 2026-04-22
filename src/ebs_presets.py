@@ -288,7 +288,9 @@ PRESETS: dict[str, dict[str, dict]] = {
                 "group_column": "SOURCE_CODE",
                 "status_column": "PROCESS_FLAG",
             },
-            "multi_org": True,
+            # MTL_TRANSACTIONS_INTERFACE uses ORGANIZATION_ID (provided in required_columns),
+            # not ORG_ID. Set multi_org=False so the component doesn't inject ORG_ID.
+            "multi_org": False,
             "uses_ledger": False,
         },
     },

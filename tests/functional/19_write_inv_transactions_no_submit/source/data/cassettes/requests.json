@@ -1,0 +1,13 @@
+{
+  "_metadata": {"db_driver": "oracledb", "freeze_time": null, "keboola_db_vcr_version": "0.1.0", "keboola_vcr_version": "0.5.0", "recorded_at": "2026-04-22T20:42:27.888645+00:00"},
+  "interactions": [
+
+  ],
+  "db_interactions": [
+    {"sql_normalized": "ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'", "params_hash": "37a6259cc0c1dae299a7866489dff0bd", "description": null, "rows": []},
+    {"sql_normalized": "SELECT APPS.MTL_MATERIAL_TRANSACTIONS_S.NEXTVAL AS NEXTVAL FROM DUAL", "params_hash": "99914b932bd37a50b983c5e7c90ae93b", "description": [["NEXTVAL", "<DbType DB_TYPE_NUMBER>"]], "rows": [[26212143]]},
+    {"sql_normalized": "ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'", "params_hash": "37a6259cc0c1dae299a7866489dff0bd", "description": null, "rows": []},
+    {"sql_normalized": "INSERT INTO APPS.MTL_TRANSACTIONS_INTERFACE (CREATED_BY, CREATION_DATE, INVENTORY_ITEM_ID, LAST_UPDATED_BY, LAST_UPDATE_DATE, ORGANIZATION_ID, PROCESS_FLAG, SOURCE_CODE, SOURCE_HEADER_ID, SOURCE_LINE_ID, TRANSACTION_DATE, TRANSACTION_INTERFACE_ID, TRANSACTION_MODE, TRANSACTION_QUANTITY, TRANSACTION_TYPE_ID, TRANSACTION_UOM) VALUES (:CREATED_BY, :CREATION_DATE, :INVENTORY_ITEM_ID, :LAST_UPDATED_BY, :LAST_UPDATE_DATE, :ORGANIZATION_ID, :PROCESS_FLAG, :SOURCE_CODE, :SOURCE_HEADER_ID, :SOURCE_LINE_ID, :TRANSACTION_DATE, :TRANSACTION_INTERFACE_ID, :TRANSACTION_MODE, :TRANSACTION_QUANTITY, :TRANSACTION_TYPE_ID, :TRANSACTION_UOM)", "params_hash": "5898802407aa5a882eb5c0f0c17eef3e", "description": null, "rows": []}
+  ],
+  "version": 1
+}

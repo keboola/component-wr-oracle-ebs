@@ -1,0 +1,2 @@
+my_inv_num,my_inv_date,my_vendor_id,my_amount,my_currency,my_description
+KBC-MAP-001,2026-04-22,1001,850.00,USD,Mapped column test invoice

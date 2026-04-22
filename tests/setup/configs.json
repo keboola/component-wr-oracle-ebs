@@ -326,5 +326,309 @@
         }
       }
     }
+  },
+  {
+    "name": "14_listEntities_gl",
+    "description": "Sync action: list GL module write targets (static — no DB needed)",
+    "config": {
+      "action": "listEntities",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "#db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "module": "gl"
+        }
+      }
+    }
+  },
+  {
+    "name": "15_error_listEntities_missing_module",
+    "description": "Error: listEntities without selecting a module should fail (exit 1)",
+    "config": {
+      "action": "listEntities",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "#db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {}
+      }
+    }
+  },
+  {
+    "name": "16_listTargetColumns_tca_preset",
+    "description": "Sync action: listTargetColumns for TCA REST preset returns metadata columns (no DB query)",
+    "config": {
+      "action": "listTargetColumns",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "#db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "preset",
+          "module": "tca",
+          "entity": "hz_create_organization"
+        }
+      }
+    }
+  },
+  {
+    "name": "17_write_ap_invoice_lines_no_submit",
+    "description": "Interface table write: AP invoice lines INSERT only (linked to invoice IDs)",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "#db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "preset",
+          "module": "ap",
+          "entity": "ap_invoice_lines_interface",
+          "org_id": 204,
+          "write_operation": "insert",
+          "submit_program": false,
+          "batch_size": 10
+        }
+      },
+      "storage": {
+        "input": {
+          "tables": [
+            {
+              "source": "in.c-test.ap_invoice_lines",
+              "destination": "ap_invoice_lines.csv"
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "18_write_ap_invoices_column_mapping",
+    "description": "Interface table write: AP invoices with column_mapping to rename input columns",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "#db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "preset",
+          "module": "ap",
+          "entity": "ap_invoices_interface",
+          "org_id": 204,
+          "write_operation": "insert",
+          "submit_program": false,
+          "batch_size": 10,
+          "column_mapping": {
+            "my_inv_num": "INVOICE_NUM",
+            "my_inv_date": "INVOICE_DATE",
+            "my_vendor_id": "VENDOR_ID",
+            "my_amount": "INVOICE_AMOUNT",
+            "my_currency": "INVOICE_CURRENCY_CODE",
+            "my_description": "DESCRIPTION"
+          }
+        }
+      },
+      "storage": {
+        "input": {
+          "tables": [
+            {
+              "source": "in.c-test.ap_invoices_mapped",
+              "destination": "ap_invoices_mapped.csv"
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "19_write_inv_transactions_no_submit",
+    "description": "Interface table write: INV transactions INSERT only",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "#db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "preset",
+          "module": "inv",
+          "entity": "mtl_transactions_interface",
+          "org_id": 204,
+          "write_operation": "insert",
+          "submit_program": false,
+          "batch_size": 10
+        }
+      },
+      "storage": {
+        "input": {
+          "tables": [
+            {
+              "source": "in.c-test.inv_transactions",
+              "destination": "inv_transactions.csv"
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "20_write_ap_invoices_upsert",
+    "description": "Interface table write: AP invoices MERGE (upsert) by INVOICE_ID — overwrites existing rows",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "#db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "preset",
+          "module": "ap",
+          "entity": "ap_invoices_interface",
+          "org_id": 204,
+          "write_operation": "upsert",
+          "primary_key": ["INVOICE_ID"],
+          "submit_program": false,
+          "batch_size": 10
+        }
+      },
+      "storage": {
+        "input": {
+          "tables": [
+            {
+              "source": "in.c-test.ap_invoices_upsert",
+              "destination": "ap_invoices_upsert.csv"
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "21_error_upsert_missing_pk",
+    "description": "Error: upsert write_operation without primary_key should fail (exit 1)",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "#db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "preset",
+          "module": "ap",
+          "entity": "ap_invoices_interface",
+          "write_operation": "upsert",
+          "primary_key": []
+        }
+      },
+      "storage": {
+        "input": {
+          "tables": [
+            {
+              "source": "in.c-test.dummy",
+              "destination": "dummy.csv"
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "22_error_ap_missing_required_column",
+    "description": "Error: AP invoices without VENDOR_ID (required column) should fail (exit 1)",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "#db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "preset",
+          "module": "ap",
+          "entity": "ap_invoices_interface",
+          "org_id": 204,
+          "write_operation": "insert",
+          "submit_program": false
+        }
+      },
+      "storage": {
+        "input": {
+          "tables": [
+            {
+              "source": "in.c-test.ap_invoices_missing_vendor",
+              "destination": "ap_invoices_missing_vendor.csv"
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "23_error_custom_mode_no_table",
+    "description": "Error: custom write mode without target_table should fail (exit 1)",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "#db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "custom",
+          "target_table": "",
+          "write_operation": "insert"
+        }
+      },
+      "storage": {
+        "input": {
+          "tables": [
+            {
+              "source": "in.c-test.dummy",
+              "destination": "dummy.csv"
+            }
+          ]
+        }
+      }
+    }
   }
 ]
