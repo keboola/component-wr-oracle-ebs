@@ -6,13 +6,13 @@
       "action": "testConnection",
       "parameters": {
         "connection": {
-          "db_host": "34.140.79.124",
+          "db_host": "34.140.37.168",
           "db_port": 1521,
           "db_service_name": "ebs_EBSDB",
           "#db_user": "PLACEHOLDER",
           "#db_password": "PLACEHOLDER"
         },
-        "rest_url": "http://34.140.79.124:8000/webservices/rest",
+        "rest_url": "http://34.140.37.168:8000/webservices/rest",
         "#rest_user": "PLACEHOLDER",
         "#rest_password": "PLACEHOLDER"
       }
@@ -25,7 +25,7 @@
       "action": "listModules",
       "parameters": {
         "connection": {
-          "db_host": "34.140.79.124",
+          "db_host": "34.140.37.168",
           "db_port": 1521,
           "db_service_name": "ebs_EBSDB",
           "#db_user": "PLACEHOLDER",
@@ -41,7 +41,7 @@
       "action": "listOperatingUnits",
       "parameters": {
         "connection": {
-          "db_host": "34.140.79.124",
+          "db_host": "34.140.37.168",
           "db_port": 1521,
           "db_service_name": "ebs_EBSDB",
           "#db_user": "PLACEHOLDER",
@@ -57,7 +57,7 @@
       "action": "listLedgers",
       "parameters": {
         "connection": {
-          "db_host": "34.140.79.124",
+          "db_host": "34.140.37.168",
           "db_port": 1521,
           "db_service_name": "ebs_EBSDB",
           "#db_user": "PLACEHOLDER",
@@ -73,7 +73,7 @@
       "action": "listEntities",
       "parameters": {
         "connection": {
-          "db_host": "34.140.79.124",
+          "db_host": "34.140.37.168",
           "db_port": 1521,
           "db_service_name": "ebs_EBSDB",
           "#db_user": "PLACEHOLDER",
@@ -92,7 +92,7 @@
       "action": "listEntities",
       "parameters": {
         "connection": {
-          "db_host": "34.140.79.124",
+          "db_host": "34.140.37.168",
           "db_port": 1521,
           "db_service_name": "ebs_EBSDB",
           "#db_user": "PLACEHOLDER",
@@ -105,13 +105,13 @@
     }
   },
   {
-    "name": "07_listTargetColumns_gl_interface",
-    "description": "Sync action: list GL_INTERFACE table columns",
+    "name": "07_listTargetColumns_ap_invoices",
+    "description": "Sync action: list AP_INVOICES_INTERFACE table columns",
     "config": {
       "action": "listTargetColumns",
       "parameters": {
         "connection": {
-          "db_host": "34.140.79.124",
+          "db_host": "34.140.37.168",
           "db_port": 1521,
           "db_service_name": "ebs_EBSDB",
           "#db_user": "PLACEHOLDER",
@@ -119,8 +119,8 @@
         },
         "destination": {
           "write_mode": "preset",
-          "module": "gl",
-          "entity": "gl_interface"
+          "module": "ap",
+          "entity": "ap_invoices_interface"
         }
       }
     }
@@ -132,13 +132,13 @@
       "action": "run",
       "parameters": {
         "connection": {
-          "db_host": "34.140.79.124",
+          "db_host": "34.140.37.168",
           "db_port": 1521,
           "db_service_name": "ebs_EBSDB",
           "#db_user": "PLACEHOLDER",
           "#db_password": "PLACEHOLDER"
         },
-        "rest_url": "http://34.140.79.124:8000/webservices/rest",
+        "rest_url": "http://34.140.37.168:8000/webservices/rest",
         "#rest_user": "PLACEHOLDER",
         "#rest_password": "PLACEHOLDER",
         "destination": {
@@ -167,13 +167,13 @@
       "action": "run",
       "parameters": {
         "connection": {
-          "db_host": "34.140.79.124",
+          "db_host": "34.140.37.168",
           "db_port": 1521,
           "db_service_name": "ebs_EBSDB",
           "#db_user": "PLACEHOLDER",
           "#db_password": "PLACEHOLDER"
         },
-        "rest_url": "http://34.140.79.124:8000/webservices/rest",
+        "rest_url": "http://34.140.37.168:8000/webservices/rest",
         "#rest_user": "PLACEHOLDER",
         "#rest_password": "PLACEHOLDER",
         "destination": {
@@ -196,13 +196,13 @@
     }
   },
   {
-    "name": "10_write_gl_interface",
-    "description": "Interface table write: GL journal entries (3-step flow)",
+    "name": "10_write_ap_invoices_interface_no_submit",
+    "description": "Interface table write: AP invoices INSERT only (skip concurrent program)",
     "config": {
       "action": "run",
       "parameters": {
         "connection": {
-          "db_host": "34.140.79.124",
+          "db_host": "34.140.37.168",
           "db_port": 1521,
           "db_service_name": "ebs_EBSDB",
           "#db_user": "PLACEHOLDER",
@@ -210,21 +210,20 @@
         },
         "destination": {
           "write_mode": "preset",
-          "module": "gl",
-          "entity": "gl_interface",
-          "ledger_id": 1,
+          "module": "ap",
+          "entity": "ap_invoices_interface",
+          "org_id": 204,
           "write_operation": "insert",
-          "submit_program": true,
-          "wait_for_completion": true,
-          "batch_size": 100
+          "submit_program": false,
+          "batch_size": 10
         }
       },
       "storage": {
         "input": {
           "tables": [
             {
-              "source": "in.c-test.gl_journal_entries",
-              "destination": "gl_journal_entries.csv"
+              "source": "in.c-test.ap_invoices",
+              "destination": "ap_invoices.csv"
             }
           ]
         }
@@ -232,13 +231,13 @@
     }
   },
   {
-    "name": "11_write_gl_interface_no_submit",
-    "description": "Interface table write: GL journal entries — INSERT only, skip concurrent program",
+    "name": "11_write_po_headers_interface_no_submit",
+    "description": "Interface table write: PO headers INSERT only (skip concurrent program)",
     "config": {
       "action": "run",
       "parameters": {
         "connection": {
-          "db_host": "34.140.79.124",
+          "db_host": "34.140.37.168",
           "db_port": 1521,
           "db_service_name": "ebs_EBSDB",
           "#db_user": "PLACEHOLDER",
@@ -246,20 +245,20 @@
         },
         "destination": {
           "write_mode": "preset",
-          "module": "gl",
-          "entity": "gl_interface",
-          "ledger_id": 1,
+          "module": "po",
+          "entity": "po_headers_interface",
+          "org_id": 204,
           "write_operation": "insert",
           "submit_program": false,
-          "batch_size": 100
+          "batch_size": 10
         }
       },
       "storage": {
         "input": {
           "tables": [
             {
-              "source": "in.c-test.gl_journal_entries",
-              "destination": "gl_journal_entries.csv"
+              "source": "in.c-test.po_headers",
+              "destination": "po_headers.csv"
             }
           ]
         }
@@ -273,7 +272,7 @@
       "action": "run",
       "parameters": {
         "connection": {
-          "db_host": "34.140.79.124",
+          "db_host": "34.140.37.168",
           "db_port": 1521,
           "db_service_name": "ebs_EBSDB",
           "#db_user": "PLACEHOLDER",
@@ -304,7 +303,7 @@
       "action": "run",
       "parameters": {
         "connection": {
-          "db_host": "34.140.79.124",
+          "db_host": "34.140.37.168",
           "db_port": 1521,
           "db_service_name": "ebs_EBSDB",
           "#db_user": "PLACEHOLDER",

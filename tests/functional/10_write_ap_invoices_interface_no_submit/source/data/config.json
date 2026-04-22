@@ -2,7 +2,7 @@
   "action": "run",
   "parameters": {
     "connection": {
-      "db_host": "34.140.79.124",
+      "db_host": "34.140.37.168",
       "db_port": 1521,
       "db_service_name": "ebs_EBSDB",
       "#db_user": "PLACEHOLDER",
@@ -10,21 +10,20 @@
     },
     "destination": {
       "write_mode": "preset",
-      "module": "gl",
-      "entity": "gl_interface",
-      "ledger_id": 1,
+      "module": "ap",
+      "entity": "ap_invoices_interface",
+      "org_id": 204,
       "write_operation": "insert",
-      "submit_program": true,
-      "wait_for_completion": true,
-      "batch_size": 100
+      "submit_program": false,
+      "batch_size": 10
     }
   },
   "storage": {
     "input": {
       "tables": [
         {
-          "source": "in.c-test.gl_journal_entries",
-          "destination": "gl_journal_entries.csv"
+          "source": "in.c-test.ap_invoices",
+          "destination": "ap_invoices.csv"
         }
       ]
     }

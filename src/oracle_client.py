@@ -3,11 +3,15 @@
 Supports INSERT, MERGE (upsert), concurrent program submission via
 FND_REQUEST.SUBMIT_REQUEST, and request status polling.
 
-Uses oracledb thin driver.
+Uses oracledb in thick mode when Oracle Instant Client is available
+(required for Oracle EBS servers with `sec_case_sensitive_logon=FALSE` or
+legacy password verifiers), otherwise falls back to thin mode.
 """
 
 import logging
+import os
 import time
+from typing import Any
 
 import oracledb
 from keboola.component.exceptions import UserException
@@ -20,6 +24,62 @@ STATUS_NORMAL = "C"
 STATUS_ERROR = "E"
 STATUS_WARNING = "G"
 
+# Oracle Instant Client search order. Docker image installs to /opt/oracle/instantclient;
+# local dev commonly uses ~/oracle/instantclient_<ver>. Override with ORACLE_CLIENT_LIB_DIR.
+_INSTANT_CLIENT_PATHS = [
+    os.environ.get("ORACLE_CLIENT_LIB_DIR", ""),
+    "/opt/oracle/instantclient",
+    os.path.expanduser("~/oracle/instantclient_23_3"),
+    os.path.expanduser("~/oracle/instantclient"),
+]
+
+
+def _init_thick_mode_if_available() -> bool:
+    """Enable oracledb thick mode if Instant Client is installed. Returns True on success.
+
+    Thick mode is required for Oracle servers using `sec_case_sensitive_logon=FALSE` or
+    advertising only the 10G password verifier — both common on older Oracle EBS installs.
+
+    Set env var `ORACLE_THIN_MODE_ONLY=1` to skip thick-mode init (used by VCR recording
+    so the cursor wrapper in keboola-vcr's DB adapter — which is thin-only — keeps working).
+    """
+    if os.environ.get("ORACLE_THIN_MODE_ONLY") == "1":
+        logging.info("ORACLE_THIN_MODE_ONLY=1 set; using thin mode")
+        return False
+
+    for candidate in _INSTANT_CLIENT_PATHS:
+        if not candidate:
+            continue
+        if not os.path.isdir(candidate):
+            continue
+        try:
+            oracledb.init_oracle_client(lib_dir=candidate)
+            logging.info("Oracle thick mode enabled: lib_dir=%s", candidate)
+            return True
+        except oracledb.ProgrammingError:
+            # Already initialized — idempotent, still thick mode
+            return True
+        except Exception as e:
+            logging.debug("Failed to init Oracle thick mode with %s: %s", candidate, e)
+    logging.info("Oracle Instant Client not found; using thin mode")
+    return False
+
+
+# Initialize thick mode at import time — once per process.
+_init_thick_mode_if_available()
+
+
+def _safe_commit(conn: Any) -> None:
+    """Commit if the connection supports it; no-op otherwise.
+
+    keboola-vcr's `_RecordingConnection` wrapper doesn't proxy `commit`; during
+    cassette recording/replay we rely on the adapter to capture the SQL anyway,
+    so skipping commit is safe in tests.
+    """
+    commit = getattr(conn, "commit", None)
+    if callable(commit):
+        commit()
+
 
 class OracleEBSClient:
     def __init__(self, host: str, port: int, service_name: str, user: str, password: str) -> None:
@@ -29,18 +89,23 @@ class OracleEBSClient:
 
     def _connect(self) -> oracledb.Connection:
         try:
-            return oracledb.connect(user=self.user, password=self.password, dsn=self.dsn)
+            conn = oracledb.connect(user=self.user, password=self.password, dsn=self.dsn)
+            # Permit ISO-8601 style date strings from CSV input to be implicit-cast into DATE columns.
+            with conn.cursor() as cur:
+                cur.execute("ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'")
+            return conn
         except oracledb.DatabaseError as e:
             msg = str(e)
             if "DPY-3015" in msg:
+                # Oracle Instant Client should have been initialized at import; if we still
+                # see DPY-3015, the bundled client failed to load or someone stripped it.
                 raise UserException(
-                    f"Cannot connect to Oracle EBS at {self.dsn}: the database user '{self.user}' "
-                    f"has an old password hash (verifier type not supported by the thin driver).\n"
-                    f"Fix on the Oracle server side — either:\n"
-                    f"  1. Reset the password to regenerate the hash:\n"
+                    f"Cannot connect to Oracle EBS at {self.dsn}: the user '{self.user}' has only "
+                    f"the legacy 10G password verifier and the bundled Oracle Instant Client failed "
+                    f"to load (falling back to thin mode). Ask your DBA to either:\n"
+                    f"  1. Reset the password so 11G/12C verifiers are generated:\n"
                     f"     ALTER USER {self.user} IDENTIFIED BY <same-or-new-password>;\n"
-                    f"  2. Allow older verifiers in sqlnet.ora:\n"
-                    f"     SQLNET.ALLOWED_LOGON_VERSION_SERVER = 11  (or 12)\n"
+                    f"  2. Ensure sec_case_sensitive_logon is TRUE at the DB/PDB level.\n"
                     f"Original error: {e}"
                 ) from e
             raise UserException(f"Cannot connect to Oracle EBS at {self.dsn}: {e}") from e
@@ -106,12 +171,27 @@ class OracleEBSClient:
                 with conn.cursor() as cur:
                     cur.execute(query, parameters=params or {})
                     columns = [desc[0].upper() for desc in cur.description]
-                    rows: list[dict] = []
-                    for raw_row in cur:
-                        rows.append(dict(zip(columns, raw_row, strict=False)))
-                    return rows
+                    # fetchall() works with both real oracledb cursors and the
+                    # keboola-vcr recording cursor shim (which doesn't implement __iter__).
+                    raw_rows = cur.fetchall() or []
+                    return [dict(zip(columns, row, strict=False)) for row in raw_rows]
         except oracledb.DatabaseError as e:
             raise UserException(f"Oracle query failed: {e}") from e
+
+    @staticmethod
+    def _execute_batch(conn: Any, sql: str, bind_data: list[dict]) -> int:
+        """Execute a parametrized statement once per row, using a fresh cursor each time.
+
+        Fresh cursor per row is deliberate: keboola-vcr's `_RecordingCursor` only flushes
+        one cassette entry per cursor lifetime (on `close()`). Reusing a single cursor
+        for multiple executes overwrites the in-progress entry, so only the last call
+        would be recorded. Creating a new cursor per row gives one cassette entry per
+        statement and keeps recording/replay symmetric.
+        """
+        for row in bind_data:
+            with conn.cursor() as cur:
+                cur.execute(sql, row)
+        return len(bind_data)
 
     # ── Write Operations ──────────────────────────────────────────
 
@@ -135,13 +215,11 @@ class OracleEBSClient:
 
         try:
             with self._connect() as conn:
-                with conn.cursor() as cur:
-                    for i in range(0, len(rows), batch_size):
-                        batch = rows[i : i + batch_size]
-                        bind_data = [{c: row.get(c) for c in columns} for row in batch]
-                        cur.executemany(sql, bind_data)
-                        total_inserted += cur.rowcount
-                conn.commit()
+                for i in range(0, len(rows), batch_size):
+                    batch = rows[i : i + batch_size]
+                    bind_data = [{c: row.get(c) for c in columns} for row in batch]
+                    total_inserted += self._execute_batch(conn, sql, bind_data)
+                _safe_commit(conn)
             logging.info("Inserted %d rows into %s", total_inserted, table_name)
             return total_inserted
         except oracledb.DatabaseError as e:
@@ -181,13 +259,11 @@ class OracleEBSClient:
         total_affected = 0
         try:
             with self._connect() as conn:
-                with conn.cursor() as cur:
-                    for i in range(0, len(rows), batch_size):
-                        batch = rows[i : i + batch_size]
-                        bind_data = [{c: row.get(c) for c in columns} for row in batch]
-                        cur.executemany(sql, bind_data)
-                        total_affected += cur.rowcount
-                conn.commit()
+                for i in range(0, len(rows), batch_size):
+                    batch = rows[i : i + batch_size]
+                    bind_data = [{c: row.get(c) for c in columns} for row in batch]
+                    total_affected += self._execute_batch(conn, sql, bind_data)
+                _safe_commit(conn)
             logging.info("Upserted %d rows into %s", total_affected, table_name)
             return total_affected
         except oracledb.DatabaseError as e:

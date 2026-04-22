@@ -16,45 +16,39 @@ Write data to Oracle E-Business Suite via direct database connection using the `
 
 ## Requirements
 
-### Oracle Database
+The component ships with Oracle Instant Client Basic Light (~50 MB) embedded in the Docker image so it connects out of the box against any supported Oracle EBS version — including older installations that only advertise the legacy 10G password verifier or run with `sec_case_sensitive_logon = FALSE`. No Oracle client installation is required on customer infrastructure; the component speaks to the EBS database directly.
 
-The component uses the `oracledb` Python driver in **thin mode** — no Oracle Client installation required, but the server must be configured to allow modern password verifiers.
+Internally, `python-oracledb` runs in **thick mode** when the bundled Instant Client is loadable, and falls back to **thin mode** otherwise. Thick mode transparently handles the full range of Oracle authentication protocols (10G, 11G, 12C).
 
-The connecting user's password must be stored with verifier type **11G (SHA-1)** or **12C (SHA-512)**. Users with the legacy 10G verifier fail with `DPY-3015`.
+Oracle Instant Client is distributed under the [Oracle Free Use Terms and Conditions (FUTC)](https://www.oracle.com/downloads/licenses/oracle-free-license.html) and is freely redistributable in third-party applications.
 
-**If you hit `DPY-3015`**, the Oracle DBA can fix it one of two ways:
+### Database user permissions
 
-1. **Reset the password** (regenerates the hash with the current verifier):
-   ```sql
-   ALTER USER <user> IDENTIFIED BY <same-or-new-password>;
-   ```
+The configured DB user needs:
 
-2. **Allow older verifiers in `sqlnet.ora`**:
-   ```
-   SQLNET.ALLOWED_LOGON_VERSION_SERVER = 11
-   ```
-   Then reset affected user passwords.
+- `CREATE SESSION`
+- `SELECT` on `apps.hr_operating_units`, `apps.gl_ledgers`, `apps.fnd_concurrent_requests`, `sys.all_tables`, `sys.all_tab_columns`
+- `INSERT` on each target interface table (e.g. `apps.ap_invoices_interface`, `apps.po_headers_interface`, `apps.mtl_transactions_interface`)
+- `EXECUTE` on `apps.fnd_request` (to submit concurrent programs) and `apps.fnd_global` (to initialize responsibility context)
 
-This is a one-time server-side fix per user.
+### ISG REST API (for TCA / AR writes)
 
-### Permissions
+For preset modes that use the ISG REST API (`tca.hz_create_organization`, `tca.hz_create_person`, `tca.hz_create_cust_account`, `ar.ar_invoice_create`), a separate ISG-enabled EBS responsibility is required — typically `SYSADMIN` or a custom responsibility with access to the `hzparty`, `hzcustaccount`, `hzpartysite`, and `arinvoice` services at `http://<host>:8000/webservices/rest/`.
 
-The database user needs:
-- `SELECT` on `apps.hr_operating_units`, `apps.gl_ledgers`, `all_tab_columns`, `all_tables`
-- `INSERT` on the target interface table(s) (e.g. `apps.ap_invoices_interface`)
-- `EXECUTE` on `apps.fnd_request` and `apps.fnd_global` (to submit concurrent programs)
-- `SELECT` on `apps.fnd_concurrent_requests` (to poll request status)
+## Supported EBS Modules
 
-For REST-based writes (TCA / AR), a separate EBS responsibility with access to the ISG REST services is required — typically `SYSADMIN` or a custom responsibility with access to `hzparty`, `hzcustaccount`, and `arinvoice` services.
-
-## Supported EBS Modules (Interface Tables)
+### Interface-table writes (3-step: INSERT → submit program → check status)
 
 - **AP** — Accounts Payable (`AP_INVOICES_INTERFACE`, `AP_INVOICE_LINES_INTERFACE`)
-- **AR** — Accounts Receivable (`RA_INTERFACE_LINES_ALL`)
-- **GL** — General Ledger (`GL_INTERFACE`)
 - **PO** — Purchasing (`PO_HEADERS_INTERFACE`, `PO_LINES_INTERFACE`)
 - **INV** — Inventory (`MTL_TRANSACTIONS_INTERFACE`)
 - **OM** — Order Management (`OE_HEADERS_IFACE_ALL`, `OE_LINES_IFACE_ALL`)
+- **GL** — General Ledger (`GL_INTERFACE`) — *requires Journal Import fixtures to be fully installed; some Vision Demo appliances ship with the editioning view present but the base table missing*
+
+### REST API writes (synchronous ISG calls)
+
+- **TCA** — Create Organization / Create Person / Create Customer Account
+- **AR** — Create Invoice (`ar_invoice_create`)
 
 ## Configuration
 

@@ -10,8 +10,9 @@ Writes data from Keboola Storage into Oracle EBS via two methods:
 """
 
 import csv
+import hashlib
+import json as _json
 import logging
-import uuid
 
 from keboola.component.base import ComponentBase, sync_action
 from keboola.component.exceptions import UserException
@@ -64,8 +65,9 @@ class Component(ComponentBase):
                 self.params.validate_rest_connection()
                 rest_result = self._build_rest_client().test_connection()
                 logging.info("REST Connection OK — %s", rest_result["url"])
-            except UserException:
-                logging.warning("REST API not configured or unreachable (optional for interface-table writes)")
+            except Exception as e:
+                # REST API is optional for interface-table writes; failure here is a warning, not an error.
+                logging.warning("REST API unreachable (optional for interface-table writes): %s", e)
 
     @sync_action("listModules")
     def list_modules(self) -> list[SelectElement]:
@@ -92,8 +94,13 @@ class Component(ComponentBase):
 
     @sync_action("listTargetColumns")
     def list_target_columns(self) -> list[SelectElement]:
-        """List columns of the target table for column mapping and PK selection."""
-        self.params.validate_connection()
+        """List columns of the target table for column mapping and PK selection.
+
+        For preset mode, returns required + optional columns from the preset metadata.
+        EBS interface tables are often editioning views that aren't visible in `all_tables`
+        to a writer-only grantee, so the preset's declared columns are the reliable source.
+        For custom mode, queries `all_tab_columns` directly.
+        """
         dest = self.configuration.parameters.get("destination", {})
 
         if dest.get("write_mode") == "preset":
@@ -102,16 +109,16 @@ class Component(ComponentBase):
             preset = get_preset(module, entity)
             if not preset:
                 raise UserException("Select a valid module and entity first.")
-            if preset.get("write_method") == "rest_api":
-                # REST presets don't have a target table — return required + optional columns
-                all_cols = preset.get("required_columns", []) + preset.get("optional_columns", [])
-                return [SelectElement(value=c, label=c) for c in all_cols]
-            table_name = preset["target_table"]
-        else:
-            table_name = dest.get("target_table", "")
-            if not table_name:
-                raise UserException("Enter a target table name first.")
+            all_cols = list(preset.get("required_columns", [])) + list(preset.get("optional_columns", []))
+            # Interface-table presets also expose sequence-generated PK columns.
+            all_cols.extend(preset.get("sequence_columns", {}).keys())
+            return [SelectElement(value=c, label=c) for c in dict.fromkeys(all_cols)]
 
+        # Custom mode — query the actual table via all_tab_columns
+        self.params.validate_connection()
+        table_name = dest.get("target_table", "")
+        if not table_name:
+            raise UserException("Enter a target table name first.")
         columns = self._build_db_client().get_table_columns(table_name)
         if not columns:
             raise UserException(f"Table {table_name} not found or has no columns.")
@@ -179,8 +186,22 @@ class Component(ComponentBase):
             for row in mapped_rows:
                 row.setdefault("LEDGER_ID", dest.ledger_id)
 
-        # Generate a batch group_id for traceability
-        group_id = str(uuid.uuid4())[:8].upper()
+        # Populate sequence-generated identifier columns (e.g. INVOICE_ID from
+        # AP_INVOICES_INTERFACE_S). Uses SELECT seq.NEXTVAL once per row.
+        sequence_cols = preset.get("sequence_columns") or {}
+        if sequence_cols:
+            client_for_seq = client
+            for row in mapped_rows:
+                for col, seq_name in sequence_cols.items():
+                    if row.get(col):
+                        continue
+                    seq_rows = client_for_seq.execute_query(f"SELECT {seq_name}.NEXTVAL AS NEXTVAL FROM dual")
+                    row[col] = seq_rows[0]["NEXTVAL"] if seq_rows else None
+
+        # Generate a batch group_id for traceability. Numeric because some EBS
+        # interface tables (e.g. PO_HEADERS_INTERFACE.BATCH_ID) use NUMBER columns.
+        # Derived deterministically from input content so VCR cassettes replay.
+        group_id = _deterministic_group_id(mapped_rows, target_table)
         status_check = preset.get("status_check")
         if status_check:
             group_col = status_check["group_column"]
@@ -331,6 +352,18 @@ class Component(ComponentBase):
 
 
 # ── Standalone utilities ─────────────────────────────────────────
+
+
+def _deterministic_group_id(rows: list[dict], salt: str = "") -> int:
+    """Derive a stable numeric batch id from input rows + target table.
+
+    Used as GROUP_ID / BATCH_ID in EBS interface-table inserts. Deterministic so
+    VCR cassettes produce identical SQL on re-record/replay.
+    Fits in Oracle NUMBER(15) — truncate to 15 decimal digits.
+    """
+    payload = _json.dumps([rows, salt], default=str, sort_keys=True)
+    digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()
+    return int(digest[:12], 16) % 10**15
 
 
 def _read_input_table(path: str) -> tuple[list[dict], list[str]]:

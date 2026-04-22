@@ -2,13 +2,13 @@
   "action": "run",
   "parameters": {
     "connection": {
-      "db_host": "34.140.79.124",
+      "db_host": "34.140.37.168",
       "db_port": 1521,
       "db_service_name": "ebs_EBSDB",
       "#db_user": "PLACEHOLDER",
       "#db_password": "PLACEHOLDER"
     },
-    "rest_url": "http://34.140.79.124:8000/webservices/rest",
+    "rest_url": "http://34.140.37.168:8000/webservices/rest",
     "#rest_user": "PLACEHOLDER",
     "#rest_password": "PLACEHOLDER",
     "destination": {

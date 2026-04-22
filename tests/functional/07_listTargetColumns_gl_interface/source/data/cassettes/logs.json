@@ -1,5 +1,0 @@
-{
-  "exit_code": 1,
-  "stderr": "Cannot connect to Oracle EBS at 34.140.79.124:1521/ebs_EBSDB: DPY-3015: password verifier type 0x939 is not supported by python-oracledb in thin mode\nHelp: https://python-oracledb.readthedocs.io/en/latest/user_guide/troubleshooting.html#dpy-3015",
-  "logs": []
-}
