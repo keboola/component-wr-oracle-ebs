@@ -178,6 +178,30 @@ class OracleEBSClient:
         except oracledb.DatabaseError as e:
             raise UserException(f"Oracle query failed: {e}") from e
 
+    def next_sequence_values(self, sequence_name: str, count: int) -> list[int]:
+        """Fetch `count` NEXTVAL values from an Oracle sequence over a single connection.
+
+        Uses one cursor per SELECT so the keboola-vcr recording shim (which flushes
+        one cassette entry per cursor close) captures each call as a separate entry —
+        keeps existing cassettes that pre-date this method replay-compatible.
+        """
+        if count <= 0:
+            return []
+        sql = f"SELECT {sequence_name}.NEXTVAL AS NEXTVAL FROM dual"
+        values: list[int] = []
+        try:
+            with self._connect() as conn:
+                for _ in range(count):
+                    with conn.cursor() as cur:
+                        # Pass parameters={} explicitly so keboola-vcr hashes match the
+                        # cassettes recorded via execute_query (which also defaults to {}).
+                        cur.execute(sql, parameters={})
+                        raw_rows = cur.fetchall() or []
+                        values.append(int(raw_rows[0][0]) if raw_rows else 0)
+            return values
+        except oracledb.DatabaseError as e:
+            raise UserException(f"Sequence {sequence_name}.NEXTVAL failed: {e}") from e
+
     @staticmethod
     def _execute_batch(conn: Any, sql: str, bind_data: list[dict]) -> int:
         """Execute a parametrized statement once per row, using a fresh cursor each time.

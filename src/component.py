@@ -28,6 +28,22 @@ class Component(ComponentBase):
     def __init__(self) -> None:
         super().__init__()
         self.params = Configuration(**self.configuration.parameters)
+        self.db_client = OracleEBSClient(
+            host=self.params.db_host,
+            port=self.params.db_port,
+            service_name=self.params.db_service_name,
+            user=self.params.db_user,
+            password=self.params.db_password,
+        )
+        self.rest_client: EBSRestClient | None = (
+            EBSRestClient(
+                base_url=self.params.rest_url,
+                user=self.params.rest_user,
+                password=self.params.rest_password,
+            )
+            if self.params.rest_url
+            else None
+        )
 
     def run(self) -> None:
         """Main execution — reads input table and writes to Oracle EBS."""
@@ -57,13 +73,13 @@ class Component(ComponentBase):
     @sync_action("testConnection")
     def test_connection(self) -> None:
         self.params.validate_connection()
-        result = self._build_db_client().test_connection()
+        result = self.db_client.test_connection()
         logging.info("DB Connection OK — %s", result["version"])
 
-        if self.params.rest_url:
+        if self.rest_client is not None:
             try:
                 self.params.validate_rest_connection()
-                rest_result = self._build_rest_client().test_connection()
+                rest_result = self.rest_client.test_connection()
                 logging.info("REST Connection OK — %s", rest_result["url"])
             except Exception as e:
                 # REST API is optional for interface-table writes; failure here is a warning, not an error.
@@ -75,7 +91,7 @@ class Component(ComponentBase):
 
     @sync_action("listEntities")
     def list_entities(self) -> list[SelectElement]:
-        module = self.configuration.parameters.get("destination", {}).get("module", "")
+        module = self.params.destination.module
         if not module:
             raise UserException("Select a module first, then reload entities.")
         return [SelectElement(value=e["value"], label=e["label"]) for e in get_entity_list(module)]
@@ -83,13 +99,13 @@ class Component(ComponentBase):
     @sync_action("listOperatingUnits")
     def list_operating_units(self) -> list[SelectElement]:
         self.params.validate_connection()
-        rows = self._build_db_client().list_operating_units()
+        rows = self.db_client.list_operating_units()
         return [SelectElement(value=str(r["ORGANIZATION_ID"]), label=f"{r['NAME']}") for r in rows]
 
     @sync_action("listLedgers")
     def list_ledgers(self) -> list[SelectElement]:
         self.params.validate_connection()
-        rows = self._build_db_client().list_ledgers()
+        rows = self.db_client.list_ledgers()
         return [SelectElement(value=str(r["LEDGER_ID"]), label=f"{r['NAME']} ({r['CURRENCY_CODE']})") for r in rows]
 
     @sync_action("listTargetColumns")
@@ -101,12 +117,10 @@ class Component(ComponentBase):
         to a writer-only grantee, so the preset's declared columns are the reliable source.
         For custom mode, queries `all_tab_columns` directly.
         """
-        dest = self.configuration.parameters.get("destination", {})
+        dest = self.params.destination
 
-        if dest.get("write_mode") == "preset":
-            module = dest.get("module", "")
-            entity = dest.get("entity", "")
-            preset = get_preset(module, entity)
+        if dest.write_mode == WriteMode.PRESET:
+            preset = get_preset(dest.module, dest.entity)
             if not preset:
                 raise UserException("Select a valid module and entity first.")
             all_cols = list(preset.get("required_columns", [])) + list(preset.get("optional_columns", []))
@@ -116,12 +130,11 @@ class Component(ComponentBase):
 
         # Custom mode — query the actual table via all_tab_columns
         self.params.validate_connection()
-        table_name = dest.get("target_table", "")
-        if not table_name:
+        if not dest.target_table:
             raise UserException("Enter a target table name first.")
-        columns = self._build_db_client().get_table_columns(table_name)
+        columns = self.db_client.get_table_columns(dest.target_table)
         if not columns:
-            raise UserException(f"Table {table_name} not found or has no columns.")
+            raise UserException(f"Table {dest.target_table} not found or has no columns.")
         return [SelectElement(value=r["COLUMN_NAME"], label=f"{r['COLUMN_NAME']} ({r['DATA_TYPE']})") for r in columns]
 
     # ── Write Paths ───────────────────────────────────────────────
@@ -142,7 +155,7 @@ class Component(ComponentBase):
     def _write_custom(self, rows: list[dict]) -> None:
         """Custom mode — direct INSERT/UPSERT into specified Oracle table."""
         dest = self.params.destination
-        client = self._build_db_client()
+        client = self.db_client
 
         mapped_rows = _apply_mapping(rows, dest.column_mapping)
         all_columns = _collect_columns(mapped_rows)
@@ -163,7 +176,7 @@ class Component(ComponentBase):
         Step 3: Check status.
         """
         dest = self.params.destination
-        client = self._build_db_client()
+        client = self.db_client
         target_table = preset["target_table"]
 
         # Apply column mapping
@@ -187,16 +200,16 @@ class Component(ComponentBase):
                 row.setdefault("LEDGER_ID", dest.ledger_id)
 
         # Populate sequence-generated identifier columns (e.g. INVOICE_ID from
-        # AP_INVOICES_INTERFACE_S). Uses SELECT seq.NEXTVAL once per row.
+        # AP_INVOICES_INTERFACE_S). Batched over a single connection so a large
+        # input doesn't issue one TCP/auth handshake per row.
         sequence_cols = preset.get("sequence_columns") or {}
-        if sequence_cols:
-            client_for_seq = client
-            for row in mapped_rows:
-                for col, seq_name in sequence_cols.items():
-                    if row.get(col):
-                        continue
-                    seq_rows = client_for_seq.execute_query(f"SELECT {seq_name}.NEXTVAL AS NEXTVAL FROM dual")
-                    row[col] = seq_rows[0]["NEXTVAL"] if seq_rows else None
+        for col, seq_name in sequence_cols.items():
+            missing_idx = [i for i, row in enumerate(mapped_rows) if not row.get(col)]
+            if not missing_idx:
+                continue
+            values = client.next_sequence_values(seq_name, len(missing_idx))
+            for idx, value in zip(missing_idx, values, strict=True):
+                mapped_rows[idx][col] = value
 
         # Generate a batch group_id for traceability. Numeric because some EBS
         # interface tables (e.g. PO_HEADERS_INTERFACE.BATCH_ID) use NUMBER columns.
@@ -260,10 +273,12 @@ class Component(ComponentBase):
     # ── REST API Path ─────────────────────────────────────────────
 
     def _write_rest_api(self, preset: dict, rows: list[dict]) -> None:
-        """Write rows via ISG REST API — one API call per row."""
+        """Write rows via ISG REST API — one API call per row. Fails fast on first error."""
         self.params.validate_rest_connection()
         dest = self.params.destination
-        rest_client = self._build_rest_client()
+        if self.rest_client is None:
+            raise UserException("REST API URL is not configured but the selected preset requires REST.")
+        rest_client = self.rest_client
         service = preset["rest_service"]
         org_id = dest.org_id or self.params.default_org_id
 
@@ -286,26 +301,23 @@ class Component(ComponentBase):
 
         logging.info("Writing %d rows via REST API (%s)", len(mapped_rows), service)
 
-        success_count = 0
-        error_count = 0
         response_id_field = preset.get("response_id_field")
+        success_count = 0
 
         for i, row in enumerate(mapped_rows, 1):
             try:
                 result = self._call_rest_service(rest_client, service, row, org_id)
-
-                if response_id_field:
-                    output = result.get("OutputParameters", result)
-                    created_id = output.get(response_id_field)
-                    logging.info("Row %d: created %s=%s", i, response_id_field, created_id)
-
-                success_count += 1
             except UserException:
-                error_count += 1
                 logging.error("Row %d failed: %s", i, row)
                 raise
 
-        logging.info("REST write complete: %d succeeded, %d failed", success_count, error_count)
+            if response_id_field:
+                output = result.get("OutputParameters", result)
+                logging.info("Row %d: created %s=%s", i, response_id_field, output.get(response_id_field))
+
+            success_count += 1
+
+        logging.info("REST write complete: %d rows succeeded", success_count)
 
     @staticmethod
     def _call_rest_service(rest_client: EBSRestClient, service: str, row: dict, org_id: int) -> dict:
@@ -329,26 +341,6 @@ class Component(ComponentBase):
             }
             return rest_client.create_ar_invoice(header_rec, [line], org_id)
         raise UserException(f"Unknown REST service: {service}")
-
-    # ── Client Builders ───────────────────────────────────────────
-
-    def _build_db_client(self) -> OracleEBSClient:
-        p = self.params
-        return OracleEBSClient(
-            host=p.db_host,
-            port=p.db_port,
-            service_name=p.db_service_name,
-            user=p.db_user,
-            password=p.db_password,
-        )
-
-    def _build_rest_client(self) -> EBSRestClient:
-        p = self.params
-        return EBSRestClient(
-            base_url=p.rest_url,
-            user=p.rest_user,
-            password=p.rest_password,
-        )
 
 
 # ── Standalone utilities ─────────────────────────────────────────

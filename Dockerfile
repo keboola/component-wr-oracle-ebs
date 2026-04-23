@@ -1,4 +1,5 @@
-FROM python:3.13-slim AS base
+# Pinned to trixie so the libaio package name (libaio1t64) is stable across rebuilds.
+FROM python:3.13-slim-trixie AS base
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /code/
@@ -10,8 +11,7 @@ WORKDIR /code/
 # https://www.oracle.com/downloads/licenses/oracle-free-license.html
 ARG INSTANT_CLIENT_URL="https://download.oracle.com/otn_software/linux/instantclient/2380000/instantclient-basiclite-linux.x64-23.8.0.25.04.zip"
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        curl ca-certificates git unzip \
-        $(apt-cache show libaio1t64 >/dev/null 2>&1 && echo libaio1t64 || echo libaio1) \
+        curl ca-certificates libaio1t64 unzip \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p /opt/oracle \
     && curl -fsSL -o /tmp/ic.zip "${INSTANT_CLIENT_URL}" \
@@ -33,6 +33,9 @@ COPY src/ src/
 
 # ── test stage ──
 FROM base AS test
+# git is needed here because dev deps (keboola-vcr, keboola-datadirtest) are resolved from GitHub.
+RUN apt-get update && apt-get install -y --no-install-recommends git \
+    && rm -rf /var/lib/apt/lists/*
 RUN uv sync --all-groups --frozen
 COPY tests/ tests/
 RUN uv run ruff check src/ tests/
