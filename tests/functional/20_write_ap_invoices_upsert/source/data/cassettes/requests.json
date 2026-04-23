@@ -1,11 +1,11 @@
 {
-  "_metadata": {"db_driver": "oracledb", "freeze_time": null, "keboola_db_vcr_version": "0.1.0", "keboola_vcr_version": "0.5.0", "recorded_at": "2026-04-23T08:32:28.722924+00:00"},
+  "_metadata": {"db_driver": "oracledb", "freeze_time": null, "keboola_db_vcr_version": "0.5.0", "keboola_vcr_version": "0.5.0", "recorded_at": "2026-04-23T15:16:36.441763+00:00"},
   "interactions": [
 
   ],
   "db_interactions": [
-    {"sql_normalized": "ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'", "params_hash": "37a6259cc0c1dae299a7866489dff0bd", "description": null, "rows": []},
-    {"sql_normalized": "INSERT INTO APPS.AP_INVOICES_INTERFACE (DESCRIPTION, GROUP_ID, INVOICE_AMOUNT, INVOICE_CURRENCY_CODE, INVOICE_DATE, INVOICE_ID, INVOICE_NUM, ORG_ID, SOURCE, VENDOR_ID) VALUES (:DESCRIPTION, :GROUP_ID, :INVOICE_AMOUNT, :INVOICE_CURRENCY_CODE, :INVOICE_DATE, :INVOICE_ID, :INVOICE_NUM, :ORG_ID, :SOURCE, :VENDOR_ID)", "params_hash": "3dc575c6966904f7db80f16a9b51555d", "description": null, "rows": []}
+    {"sql_normalized": "ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'", "params_hash": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b", "description": null, "rows": []},
+    {"sql_normalized": "INSERT INTO APPS.AP_INVOICES_INTERFACE (DESCRIPTION, GROUP_ID, INVOICE_AMOUNT, INVOICE_CURRENCY_CODE, INVOICE_DATE, INVOICE_ID, INVOICE_NUM, ORG_ID, SOURCE, VENDOR_ID) VALUES (:DESCRIPTION, :GROUP_ID, :INVOICE_AMOUNT, :INVOICE_CURRENCY_CODE, :INVOICE_DATE, :INVOICE_ID, :INVOICE_NUM, :ORG_ID, :SOURCE, :VENDOR_ID)", "params_hash": "264b87a269ffac76c891ddd647f119fc91277fac86edf4a2b94afcd170019b25", "description": null, "rows": []}
   ],
   "version": 1
 }

@@ -1,16 +1,15 @@
 {
-  "_metadata": {"db_driver": "oracledb", "freeze_time": null, "keboola_db_vcr_version": "0.1.0", "keboola_vcr_version": "0.5.0", "recorded_at": "2026-04-23T08:32:25.891222+00:00"},
+  "_metadata": {"db_driver": "oracledb", "freeze_time": null, "keboola_db_vcr_version": "0.5.0", "keboola_vcr_version": "0.5.0", "recorded_at": "2026-04-23T15:16:33.818977+00:00"},
   "interactions": [
 
   ],
   "db_interactions": [
-    {"sql_normalized": "ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'", "params_hash": "37a6259cc0c1dae299a7866489dff0bd", "description": null, "rows": []},
-    {"sql_normalized": "SELECT APPS.PO_HEADERS_INTERFACE_S.NEXTVAL AS NEXTVAL FROM DUAL", "params_hash": "99914b932bd37a50b983c5e7c90ae93b", "description": [["NEXTVAL", "<DbType DB_TYPE_NUMBER>"]], "rows": [[1517885]]},
-    {"sql_normalized": "ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'", "params_hash": "37a6259cc0c1dae299a7866489dff0bd", "description": null, "rows": []},
-    {"sql_normalized": "SELECT APPS.PO_HEADERS_INTERFACE_S.NEXTVAL AS NEXTVAL FROM DUAL", "params_hash": "99914b932bd37a50b983c5e7c90ae93b", "description": [["NEXTVAL", "<DbType DB_TYPE_NUMBER>"]], "rows": [[1517886]]},
-    {"sql_normalized": "ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'", "params_hash": "37a6259cc0c1dae299a7866489dff0bd", "description": null, "rows": []},
-    {"sql_normalized": "INSERT INTO APPS.PO_HEADERS_INTERFACE (ACTION, BATCH_ID, CURRENCY_CODE, DOCUMENT_TYPE_CODE, INTERFACE_HEADER_ID, ORG_ID, PROCESS_CODE, VENDOR_ID) VALUES (:ACTION, :BATCH_ID, :CURRENCY_CODE, :DOCUMENT_TYPE_CODE, :INTERFACE_HEADER_ID, :ORG_ID, :PROCESS_CODE, :VENDOR_ID)", "params_hash": "964cdacbd72ec75aec8b100704fa2b64", "description": null, "rows": []},
-    {"sql_normalized": "INSERT INTO APPS.PO_HEADERS_INTERFACE (ACTION, BATCH_ID, CURRENCY_CODE, DOCUMENT_TYPE_CODE, INTERFACE_HEADER_ID, ORG_ID, PROCESS_CODE, VENDOR_ID) VALUES (:ACTION, :BATCH_ID, :CURRENCY_CODE, :DOCUMENT_TYPE_CODE, :INTERFACE_HEADER_ID, :ORG_ID, :PROCESS_CODE, :VENDOR_ID)", "params_hash": "2b10295ab241a2285a7626825a6c8ec1", "description": null, "rows": []}
+    {"sql_normalized": "ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'", "params_hash": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b", "description": null, "rows": []},
+    {"sql_normalized": "SELECT APPS.PO_HEADERS_INTERFACE_S.NEXTVAL AS NEXTVAL FROM DUAL", "params_hash": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a", "description": [["NEXTVAL", "<DbType DB_TYPE_NUMBER>"]], "rows": [[1517887]]},
+    {"sql_normalized": "SELECT APPS.PO_HEADERS_INTERFACE_S.NEXTVAL AS NEXTVAL FROM DUAL", "params_hash": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a", "description": [["NEXTVAL", "<DbType DB_TYPE_NUMBER>"]], "rows": [[1517888]]},
+    {"sql_normalized": "ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'", "params_hash": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b", "description": null, "rows": []},
+    {"sql_normalized": "INSERT INTO APPS.PO_HEADERS_INTERFACE (ACTION, BATCH_ID, CURRENCY_CODE, DOCUMENT_TYPE_CODE, INTERFACE_HEADER_ID, ORG_ID, PROCESS_CODE, VENDOR_ID) VALUES (:ACTION, :BATCH_ID, :CURRENCY_CODE, :DOCUMENT_TYPE_CODE, :INTERFACE_HEADER_ID, :ORG_ID, :PROCESS_CODE, :VENDOR_ID)", "params_hash": "0a78a6e1126b890256386592e354a2c25c587925a404ec1576097a19621921e1", "description": null, "rows": []},
+    {"sql_normalized": "INSERT INTO APPS.PO_HEADERS_INTERFACE (ACTION, BATCH_ID, CURRENCY_CODE, DOCUMENT_TYPE_CODE, INTERFACE_HEADER_ID, ORG_ID, PROCESS_CODE, VENDOR_ID) VALUES (:ACTION, :BATCH_ID, :CURRENCY_CODE, :DOCUMENT_TYPE_CODE, :INTERFACE_HEADER_ID, :ORG_ID, :PROCESS_CODE, :VENDOR_ID)", "params_hash": "a5b669ca136a7b1986d3c1b10cf900c7693259b8f88ac239c76e061cfe222b7e", "description": null, "rows": []}
   ],
   "version": 1
 }

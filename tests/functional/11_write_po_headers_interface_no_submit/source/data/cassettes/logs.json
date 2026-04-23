@@ -6,31 +6,31 @@
       "level": "INFO",
       "logger": "root",
       "message": "Reading input table: po_headers.csv",
-      "timestamp": "2026-04-23T08:32:24.879Z"
+      "timestamp": "2026-04-23T15:16:33.098Z"
     },
     {
       "level": "INFO",
       "logger": "root",
       "message": "Read 2 rows with 2 columns from input",
-      "timestamp": "2026-04-23T08:32:24.880Z"
+      "timestamp": "2026-04-23T15:16:33.098Z"
     },
     {
       "level": "INFO",
       "logger": "root",
-      "message": "Step 1/3: Inserting 2 rows into APPS.PO_HEADERS_INTERFACE (group_id=162767247509081)",
-      "timestamp": "2026-04-23T08:32:25.516Z"
+      "message": "Step 1/3: Inserting 2 rows into APPS.PO_HEADERS_INTERFACE (group_id=225176942951217)",
+      "timestamp": "2026-04-23T15:16:33.441Z"
     },
     {
       "level": "INFO",
       "logger": "root",
       "message": "Inserted 2 rows into APPS.PO_HEADERS_INTERFACE",
-      "timestamp": "2026-04-23T08:32:25.889Z"
+      "timestamp": "2026-04-23T15:16:33.816Z"
     },
     {
       "level": "INFO",
       "logger": "root",
       "message": "Step 2-3/3: Skipped \u2014 no concurrent program or submit_program disabled.",
-      "timestamp": "2026-04-23T08:32:25.890Z"
+      "timestamp": "2026-04-23T15:16:33.816Z"
     }
   ]
 }

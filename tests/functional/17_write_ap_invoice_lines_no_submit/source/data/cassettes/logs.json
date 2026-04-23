@@ -6,31 +6,31 @@
       "level": "INFO",
       "logger": "root",
       "message": "Reading input table: ap_invoice_lines.csv",
-      "timestamp": "2026-04-23T08:32:25.984Z"
+      "timestamp": "2026-04-23T15:16:33.914Z"
     },
     {
       "level": "INFO",
       "logger": "root",
       "message": "Read 2 rows with 5 columns from input",
-      "timestamp": "2026-04-23T08:32:25.984Z"
+      "timestamp": "2026-04-23T15:16:33.914Z"
     },
     {
       "level": "INFO",
       "logger": "root",
-      "message": "Step 1/3: Inserting 2 rows into APPS.AP_INVOICE_LINES_INTERFACE (group_id=202181393308767)",
-      "timestamp": "2026-04-23T08:32:26.608Z"
+      "message": "Step 1/3: Inserting 2 rows into APPS.AP_INVOICE_LINES_INTERFACE (group_id=243846432474799)",
+      "timestamp": "2026-04-23T15:16:34.258Z"
     },
     {
       "level": "INFO",
       "logger": "root",
       "message": "Inserted 2 rows into APPS.AP_INVOICE_LINES_INTERFACE",
-      "timestamp": "2026-04-23T08:32:26.986Z"
+      "timestamp": "2026-04-23T15:16:34.641Z"
     },
     {
       "level": "INFO",
       "logger": "root",
       "message": "Step 2-3/3: Skipped \u2014 no concurrent program or submit_program disabled.",
-      "timestamp": "2026-04-23T08:32:26.986Z"
+      "timestamp": "2026-04-23T15:16:34.642Z"
     }
   ]
 }

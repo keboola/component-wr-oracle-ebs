@@ -2,7 +2,7 @@
 name = "wr-oracle-ebs"
 dynamic = ["version"]
 readme = "README.md"
-requires-python = "~=3.13"
+requires-python = "~=3.13.0"
 dependencies = [
     "keboola-component>=1.9.0",
     "keboola-utils>=1.1.0",
@@ -21,10 +21,6 @@ dev = [
     "pytest>=9.0.2",
     "ruff>=0.15.2",
 ]
-
-[tool.uv.sources]
-keboola-datadirtest = { git = "https://github.com/keboola/datadirtest.git", rev = "82f0c083263ffba193dd304439243de55b3f70a9" }
-keboola-vcr = { git = "https://github.com/keboola/python-vcr-tests.git", rev = "aaa70504db8e6c687530868633f4a0135b717496" }
 
 [tool.ruff]
 line-length = 120

@@ -6,31 +6,31 @@
       "level": "INFO",
       "logger": "root",
       "message": "Reading input table: inv_transactions.csv",
-      "timestamp": "2026-04-23T08:32:27.667Z"
+      "timestamp": "2026-04-23T15:16:35.387Z"
     },
     {
       "level": "INFO",
       "logger": "root",
       "message": "Read 1 rows with 12 columns from input",
-      "timestamp": "2026-04-23T08:32:27.667Z"
+      "timestamp": "2026-04-23T15:16:35.387Z"
     },
     {
       "level": "INFO",
       "logger": "root",
-      "message": "Step 1/3: Inserting 1 rows into APPS.MTL_TRANSACTIONS_INTERFACE (group_id=3133275636725)",
-      "timestamp": "2026-04-23T08:32:28.019Z"
+      "message": "Step 1/3: Inserting 1 rows into APPS.MTL_TRANSACTIONS_INTERFACE (group_id=215769854681092)",
+      "timestamp": "2026-04-23T15:16:35.716Z"
     },
     {
       "level": "INFO",
       "logger": "root",
       "message": "Inserted 1 rows into APPS.MTL_TRANSACTIONS_INTERFACE",
-      "timestamp": "2026-04-23T08:32:28.353Z"
+      "timestamp": "2026-04-23T15:16:36.064Z"
     },
     {
       "level": "INFO",
       "logger": "root",
       "message": "Step 2-3/3: Skipped \u2014 no concurrent program or submit_program disabled.",
-      "timestamp": "2026-04-23T08:32:28.353Z"
+      "timestamp": "2026-04-23T15:16:36.065Z"
     }
   ]
 }
