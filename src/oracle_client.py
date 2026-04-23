@@ -47,11 +47,13 @@ def _init_thick_mode_if_available() -> bool:
         logging.info("ORACLE_THIN_MODE_ONLY=1 set; using thin mode")
         return False
 
+    tried: list[str] = []
     for candidate in _INSTANT_CLIENT_PATHS:
         if not candidate:
             continue
         if not os.path.isdir(candidate):
             continue
+        tried.append(candidate)
         try:
             oracledb.init_oracle_client(lib_dir=candidate)
             logging.info("Oracle thick mode enabled: lib_dir=%s", candidate)
@@ -60,8 +62,15 @@ def _init_thick_mode_if_available() -> bool:
             # Already initialized — idempotent, still thick mode
             return True
         except Exception as e:
-            logging.debug("Failed to init Oracle thick mode with %s: %s", candidate, e)
-    logging.info("Oracle Instant Client not found; using thin mode")
+            # Surface the real failure reason so the operator can fix it.
+            logging.warning("Failed to init Oracle thick mode with %s: %s", candidate, e)
+    if tried:
+        logging.warning(
+            "Oracle Instant Client directories were present but none loaded: %s. Using thin mode.",
+            ", ".join(tried),
+        )
+    else:
+        logging.info("Oracle Instant Client not found; using thin mode")
     return False
 
 
@@ -97,15 +106,23 @@ class OracleEBSClient:
         except oracledb.DatabaseError as e:
             msg = str(e)
             if "DPY-3015" in msg:
-                # Oracle Instant Client should have been initialized at import; if we still
-                # see DPY-3015, the bundled client failed to load or someone stripped it.
+                thin_active = oracledb.is_thin_mode()
+                reason = (
+                    "the bundled Oracle Instant Client failed to load at import "
+                    "(check startup logs for `Failed to init Oracle thick mode`)"
+                    if thin_active
+                    else "Oracle server is advertising the legacy 10G password verifier"
+                )
                 raise UserException(
-                    f"Cannot connect to Oracle EBS at {self.dsn}: the user '{self.user}' has only "
-                    f"the legacy 10G password verifier and the bundled Oracle Instant Client failed "
-                    f"to load (falling back to thin mode). Ask your DBA to either:\n"
-                    f"  1. Reset the password so 11G/12C verifiers are generated:\n"
-                    f"     ALTER USER {self.user} IDENTIFIED BY <same-or-new-password>;\n"
-                    f"  2. Ensure sec_case_sensitive_logon is TRUE at the DB/PDB level.\n"
+                    f"Cannot connect to Oracle EBS at {self.dsn}: {reason}. "
+                    f"The user '{self.user}' likely has only the 10G verifier, which the thin "
+                    f"driver doesn't support. Either:\n"
+                    f"  1. Let the component use thick mode (default in the Keboola-provided "
+                    f"Docker image). If you're running locally, install Oracle Instant Client "
+                    f"and set ORACLE_CLIENT_LIB_DIR.\n"
+                    f"  2. Ask your DBA to reset the user's password so 11G/12C verifiers are "
+                    f"generated:  ALTER USER {self.user} IDENTIFIED BY <same-or-new-password>;\n"
+                    f"  3. Ensure `sec_case_sensitive_logon` is TRUE at the DB/PDB level.\n"
                     f"Original error: {e}"
                 ) from e
             raise UserException(f"Cannot connect to Oracle EBS at {self.dsn}: {e}") from e
