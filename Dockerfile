@@ -19,6 +19,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm /tmp/ic.zip \
     && ln -sfn /opt/oracle/instantclient_* /opt/oracle/instantclient \
     && echo "/opt/oracle/instantclient" > /etc/ld.so.conf.d/oracle-instantclient.conf \
+    # Compatibility symlink for Debian trixie+ t64 transition: Instant Client 23.x
+    # is compiled against libaio.so.1 but trixie ships libaio.so.1t64.
+    && if [ -f /usr/lib/x86_64-linux-gnu/libaio.so.1t64 ] && [ ! -e /usr/lib/x86_64-linux-gnu/libaio.so.1 ]; then \
+           ln -s libaio.so.1t64 /usr/lib/x86_64-linux-gnu/libaio.so.1; \
+       fi \
     && ldconfig
 ENV LD_LIBRARY_PATH="/opt/oracle/instantclient:${LD_LIBRARY_PATH}"
 
