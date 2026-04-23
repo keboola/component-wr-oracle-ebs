@@ -420,7 +420,9 @@ class OracleEBSClient:
 
     # ── Interface Table Status Check ──────────────────────────────
 
-    def check_interface_status(self, table_name: str, group_column: str, group_id: str, status_column: str) -> dict:
+    def check_interface_status(
+        self, table_name: str, group_column: str, group_id: str | int, status_column: str
+    ) -> dict:
         """Check how many rows succeeded/failed in an interface table after processing."""
         sql = f"""
             SELECT {status_column}, COUNT(*) AS cnt

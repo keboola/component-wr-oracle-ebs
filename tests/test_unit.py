@@ -65,6 +65,7 @@ class TestGetPreset:
 
     def test_gl_interface_has_defaults(self) -> None:
         preset = get_preset("gl", "gl_interface")
+        assert preset is not None
         assert preset["default_values"]["STATUS"] == "NEW"
         assert preset["default_values"]["ACTUAL_FLAG"] == "A"
         assert preset["default_values"]["USER_JE_SOURCE_NAME"] == "Keboola"

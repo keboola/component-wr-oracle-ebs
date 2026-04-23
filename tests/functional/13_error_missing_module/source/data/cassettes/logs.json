@@ -6,7 +6,7 @@
       "level": "ERROR",
       "logger": "root",
       "message": "'module' is required in preset mode.\nTraceback (most recent call last):\n  File \"src/component.py\", line 410, in <module>\n    comp.execute_action()\n    ~~~~~~~~~~~~~~~~~~~^^\n  File \"/Users/matyasjirat/VSCodeProjects/Keboola/component-wr-oracle-ebs/.venv/lib/python3.13/site-packages/keboola/component/base.py\", line 251, in execute_action\n    return self._do_execute_action()\n           ~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"/Users/matyasjirat/VSCodeProjects/Keboola/component-wr-oracle-ebs/.venv/lib/python3.13/site-packages/keboola/component/base.py\", line 265, in _do_execute_action\n    return action_method()\n  File \"src/component.py\", line 34, in run\n    self.params.validate_row()\n    ~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"/Users/matyasjirat/VSCodeProjects/Keboola/component-wr-oracle-ebs/src/configuration.py\", line 98, in validate_row\n    raise UserException(\"'module' is required in preset mode.\")\nkeboola.component.exceptions.UserException: 'module' is required in preset mode.",
-      "timestamp": "2026-04-22T20:42:25.314Z"
+      "timestamp": "2026-04-23T08:32:25.933Z"
     }
   ]
 }

@@ -1,16 +1,16 @@
 {
-  "_metadata": {"db_driver": "oracledb", "freeze_time": null, "keboola_db_vcr_version": "0.1.0", "keboola_vcr_version": "0.5.0", "recorded_at": "2026-04-22T20:42:26.536666+00:00"},
+  "_metadata": {"db_driver": "oracledb", "freeze_time": null, "keboola_db_vcr_version": "0.1.0", "keboola_vcr_version": "0.5.0", "recorded_at": "2026-04-23T08:32:26.987264+00:00"},
   "interactions": [
 
   ],
   "db_interactions": [
     {"sql_normalized": "ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'", "params_hash": "37a6259cc0c1dae299a7866489dff0bd", "description": null, "rows": []},
-    {"sql_normalized": "SELECT APPS.AP_INVOICE_LINES_INTERFACE_S.NEXTVAL AS NEXTVAL FROM DUAL", "params_hash": "99914b932bd37a50b983c5e7c90ae93b", "description": [["NEXTVAL", "<DbType DB_TYPE_NUMBER>"]], "rows": [[6182502]]},
+    {"sql_normalized": "SELECT APPS.AP_INVOICE_LINES_INTERFACE_S.NEXTVAL AS NEXTVAL FROM DUAL", "params_hash": "99914b932bd37a50b983c5e7c90ae93b", "description": [["NEXTVAL", "<DbType DB_TYPE_NUMBER>"]], "rows": [[6182504]]},
     {"sql_normalized": "ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'", "params_hash": "37a6259cc0c1dae299a7866489dff0bd", "description": null, "rows": []},
-    {"sql_normalized": "SELECT APPS.AP_INVOICE_LINES_INTERFACE_S.NEXTVAL AS NEXTVAL FROM DUAL", "params_hash": "99914b932bd37a50b983c5e7c90ae93b", "description": [["NEXTVAL", "<DbType DB_TYPE_NUMBER>"]], "rows": [[6182503]]},
+    {"sql_normalized": "SELECT APPS.AP_INVOICE_LINES_INTERFACE_S.NEXTVAL AS NEXTVAL FROM DUAL", "params_hash": "99914b932bd37a50b983c5e7c90ae93b", "description": [["NEXTVAL", "<DbType DB_TYPE_NUMBER>"]], "rows": [[6182505]]},
     {"sql_normalized": "ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'", "params_hash": "37a6259cc0c1dae299a7866489dff0bd", "description": null, "rows": []},
-    {"sql_normalized": "INSERT INTO APPS.AP_INVOICE_LINES_INTERFACE (AMOUNT, DESCRIPTION, INVOICE_ID, INVOICE_LINE_ID, LINE_NUMBER, LINE_TYPE_LOOKUP_CODE, ORG_ID) VALUES (:AMOUNT, :DESCRIPTION, :INVOICE_ID, :INVOICE_LINE_ID, :LINE_NUMBER, :LINE_TYPE_LOOKUP_CODE, :ORG_ID)", "params_hash": "e11504ad48facfb0383e476edbccd455", "description": null, "rows": []},
-    {"sql_normalized": "INSERT INTO APPS.AP_INVOICE_LINES_INTERFACE (AMOUNT, DESCRIPTION, INVOICE_ID, INVOICE_LINE_ID, LINE_NUMBER, LINE_TYPE_LOOKUP_CODE, ORG_ID) VALUES (:AMOUNT, :DESCRIPTION, :INVOICE_ID, :INVOICE_LINE_ID, :LINE_NUMBER, :LINE_TYPE_LOOKUP_CODE, :ORG_ID)", "params_hash": "1a15a57a517d6fdd003d0fb8683b16ba", "description": null, "rows": []}
+    {"sql_normalized": "INSERT INTO APPS.AP_INVOICE_LINES_INTERFACE (AMOUNT, DESCRIPTION, INVOICE_ID, INVOICE_LINE_ID, LINE_NUMBER, LINE_TYPE_LOOKUP_CODE, ORG_ID) VALUES (:AMOUNT, :DESCRIPTION, :INVOICE_ID, :INVOICE_LINE_ID, :LINE_NUMBER, :LINE_TYPE_LOOKUP_CODE, :ORG_ID)", "params_hash": "e4b8a85b71c6b023436abc08d83c49e3", "description": null, "rows": []},
+    {"sql_normalized": "INSERT INTO APPS.AP_INVOICE_LINES_INTERFACE (AMOUNT, DESCRIPTION, INVOICE_ID, INVOICE_LINE_ID, LINE_NUMBER, LINE_TYPE_LOOKUP_CODE, ORG_ID) VALUES (:AMOUNT, :DESCRIPTION, :INVOICE_ID, :INVOICE_LINE_ID, :LINE_NUMBER, :LINE_TYPE_LOOKUP_CODE, :ORG_ID)", "params_hash": "6acdacab17293158a802449169c9dbd8", "description": null, "rows": []}
   ],
   "version": 1
 }

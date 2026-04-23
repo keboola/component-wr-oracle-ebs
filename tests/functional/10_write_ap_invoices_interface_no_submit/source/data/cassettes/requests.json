@@ -1,16 +1,16 @@
 {
-  "_metadata": {"db_driver": "oracledb", "freeze_time": null, "keboola_db_vcr_version": "0.1.0", "keboola_vcr_version": "0.5.0", "recorded_at": "2026-04-22T20:42:24.262981+00:00"},
+  "_metadata": {"db_driver": "oracledb", "freeze_time": null, "keboola_db_vcr_version": "0.1.0", "keboola_vcr_version": "0.5.0", "recorded_at": "2026-04-23T08:32:24.859647+00:00"},
   "interactions": [
 
   ],
   "db_interactions": [
     {"sql_normalized": "ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'", "params_hash": "37a6259cc0c1dae299a7866489dff0bd", "description": null, "rows": []},
-    {"sql_normalized": "SELECT APPS.AP_INVOICES_INTERFACE_S.NEXTVAL AS NEXTVAL FROM DUAL", "params_hash": "99914b932bd37a50b983c5e7c90ae93b", "description": [["NEXTVAL", "<DbType DB_TYPE_NUMBER>"]], "rows": [[5172475]]},
+    {"sql_normalized": "SELECT APPS.AP_INVOICES_INTERFACE_S.NEXTVAL AS NEXTVAL FROM DUAL", "params_hash": "99914b932bd37a50b983c5e7c90ae93b", "description": [["NEXTVAL", "<DbType DB_TYPE_NUMBER>"]], "rows": [[5172479]]},
     {"sql_normalized": "ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'", "params_hash": "37a6259cc0c1dae299a7866489dff0bd", "description": null, "rows": []},
-    {"sql_normalized": "SELECT APPS.AP_INVOICES_INTERFACE_S.NEXTVAL AS NEXTVAL FROM DUAL", "params_hash": "99914b932bd37a50b983c5e7c90ae93b", "description": [["NEXTVAL", "<DbType DB_TYPE_NUMBER>"]], "rows": [[5172476]]},
+    {"sql_normalized": "SELECT APPS.AP_INVOICES_INTERFACE_S.NEXTVAL AS NEXTVAL FROM DUAL", "params_hash": "99914b932bd37a50b983c5e7c90ae93b", "description": [["NEXTVAL", "<DbType DB_TYPE_NUMBER>"]], "rows": [[5172480]]},
     {"sql_normalized": "ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'", "params_hash": "37a6259cc0c1dae299a7866489dff0bd", "description": null, "rows": []},
-    {"sql_normalized": "INSERT INTO APPS.AP_INVOICES_INTERFACE (DESCRIPTION, GROUP_ID, INVOICE_AMOUNT, INVOICE_CURRENCY_CODE, INVOICE_DATE, INVOICE_ID, INVOICE_NUM, ORG_ID, SOURCE, VENDOR_ID) VALUES (:DESCRIPTION, :GROUP_ID, :INVOICE_AMOUNT, :INVOICE_CURRENCY_CODE, :INVOICE_DATE, :INVOICE_ID, :INVOICE_NUM, :ORG_ID, :SOURCE, :VENDOR_ID)", "params_hash": "e8173fa2e0ef4762c52f5fc44fbba68b", "description": null, "rows": []},
-    {"sql_normalized": "INSERT INTO APPS.AP_INVOICES_INTERFACE (DESCRIPTION, GROUP_ID, INVOICE_AMOUNT, INVOICE_CURRENCY_CODE, INVOICE_DATE, INVOICE_ID, INVOICE_NUM, ORG_ID, SOURCE, VENDOR_ID) VALUES (:DESCRIPTION, :GROUP_ID, :INVOICE_AMOUNT, :INVOICE_CURRENCY_CODE, :INVOICE_DATE, :INVOICE_ID, :INVOICE_NUM, :ORG_ID, :SOURCE, :VENDOR_ID)", "params_hash": "4a98595f59da4d4eaac1a3a3133fcc71", "description": null, "rows": []}
+    {"sql_normalized": "INSERT INTO APPS.AP_INVOICES_INTERFACE (DESCRIPTION, GROUP_ID, INVOICE_AMOUNT, INVOICE_CURRENCY_CODE, INVOICE_DATE, INVOICE_ID, INVOICE_NUM, ORG_ID, SOURCE, VENDOR_ID) VALUES (:DESCRIPTION, :GROUP_ID, :INVOICE_AMOUNT, :INVOICE_CURRENCY_CODE, :INVOICE_DATE, :INVOICE_ID, :INVOICE_NUM, :ORG_ID, :SOURCE, :VENDOR_ID)", "params_hash": "e9b466a85b8259b97dec8eeffbeacab4", "description": null, "rows": []},
+    {"sql_normalized": "INSERT INTO APPS.AP_INVOICES_INTERFACE (DESCRIPTION, GROUP_ID, INVOICE_AMOUNT, INVOICE_CURRENCY_CODE, INVOICE_DATE, INVOICE_ID, INVOICE_NUM, ORG_ID, SOURCE, VENDOR_ID) VALUES (:DESCRIPTION, :GROUP_ID, :INVOICE_AMOUNT, :INVOICE_CURRENCY_CODE, :INVOICE_DATE, :INVOICE_ID, :INVOICE_NUM, :ORG_ID, :SOURCE, :VENDOR_ID)", "params_hash": "c72dc42333b8da26ae4384e10cec7e46", "description": null, "rows": []}
   ],
   "version": 1
 }
