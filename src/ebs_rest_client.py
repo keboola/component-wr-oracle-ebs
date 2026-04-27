@@ -116,7 +116,9 @@ class EBSRestClient:
                 "RESTHeader": self._rest_header(org_id),
                 "P_INIT_MSG_LIST": "T",
                 "P_ORGANIZATION_REC": {
-                    **{k: v for k, v in org_rec.items() if k != "CREATED_BY_MODULE"},
+                    # Drop None / empty values — Oracle TCA validates JSON null
+                    # against typed fields and rejects the call. Missing keys are fine.
+                    **{k: v for k, v in org_rec.items() if k != "CREATED_BY_MODULE" and v not in (None, "")},
                     "CREATED_BY_MODULE": org_rec.get("CREATED_BY_MODULE", "TCA_V2_API"),
                 },
             }
@@ -130,7 +132,7 @@ class EBSRestClient:
                 "RESTHeader": self._rest_header(org_id),
                 "P_INIT_MSG_LIST": "T",
                 "P_PERSON_REC": {
-                    **{k: v for k, v in person_rec.items() if k != "CREATED_BY_MODULE"},
+                    **{k: v for k, v in person_rec.items() if k != "CREATED_BY_MODULE" and v not in (None, "")},
                     "CREATED_BY_MODULE": person_rec.get("CREATED_BY_MODULE", "TCA_V2_API"),
                 },
             }
