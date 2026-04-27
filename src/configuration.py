@@ -63,6 +63,12 @@ class Configuration(BaseModel):
             conn = data.pop("connection")
             if isinstance(conn, dict):
                 data = {**data, **conn}
+        if isinstance(data, dict) and "rest_connection" in data:
+            rest_conn = data.pop("rest_connection")
+            if isinstance(rest_conn, dict):
+                # Drop the UI-only enable_rest flag before merging
+                rest_conn = {k: v for k, v in rest_conn.items() if k != "enable_rest"}
+                data = {**data, **rest_conn}
         return data
 
     def __init__(self, **data: object) -> None:

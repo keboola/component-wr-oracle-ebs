@@ -76,14 +76,13 @@ class Component(ComponentBase):
         result = self.db_client.test_connection()
         logging.info("DB Connection OK — %s", result["version"])
 
-        if self.rest_client is not None:
-            try:
-                self.params.validate_rest_connection()
-                rest_result = self.rest_client.test_connection()
-                logging.info("REST Connection OK — %s", rest_result["url"])
-            except Exception as e:
-                # REST API is optional for interface-table writes; failure here is a warning, not an error.
-                logging.warning("REST API unreachable (optional for interface-table writes): %s", e)
+    @sync_action("testRestConnection")
+    def test_rest_connection(self) -> None:
+        self.params.validate_rest_connection()
+        if self.rest_client is None:
+            raise UserException("REST API is not enabled in connection settings.")
+        rest_result = self.rest_client.test_connection()
+        logging.info("REST Connection OK — %s", rest_result["url"])
 
     @sync_action("listModules")
     def list_modules(self) -> list[SelectElement]:

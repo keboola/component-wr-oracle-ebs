@@ -64,30 +64,86 @@
         }
       }
     },
-    "rest_url": {
-      "type": "string",
-      "title": "EBS REST API URL",
-      "description": "ISG REST API base URL (e.g. http://host:8000/webservices/rest). Required for TCA and AR writes.",
-      "propertyOrder": 2
-    },
-    "#rest_user": {
-      "type": "string",
-      "title": "REST API Username",
-      "description": "EBS REST API user (typically SYSADMIN)",
-      "propertyOrder": 3
-    },
-    "#rest_password": {
-      "type": "string",
-      "title": "REST API Password",
-      "format": "password",
-      "propertyOrder": 4
-    },
-    "default_org_id": {
-      "type": "integer",
-      "title": "Default Org ID",
-      "description": "Default operating unit ID for REST API calls (e.g. 204 = Vision Operations)",
-      "default": 204,
-      "propertyOrder": 5
+    "rest_connection": {
+      "type": "object",
+      "title": "REST Connection",
+      "format": "grid-strict",
+      "propertyOrder": 2,
+      "properties": {
+        "enable_rest": {
+          "type": "boolean",
+          "title": "Enable REST API",
+          "description": "Required only for TCA party and AR invoice writes. Interface-table writes (AP, PO, GL, INV, OM) work without it.",
+          "format": "checkbox",
+          "default": false,
+          "propertyOrder": 1,
+          "options": {
+            "grid_columns": 12
+          }
+        },
+        "rest_url": {
+          "type": "string",
+          "title": "EBS REST API URL",
+          "description": "ISG REST API base URL (e.g. http://host:8000/webservices/rest). Required for TCA and AR writes.",
+          "propertyOrder": 2,
+          "options": {
+            "grid_columns": 6,
+            "dependencies": {
+              "rest_connection.enable_rest": true
+            }
+          }
+        },
+        "#rest_user": {
+          "type": "string",
+          "title": "REST API Username",
+          "description": "EBS REST API user (typically SYSADMIN)",
+          "propertyOrder": 3,
+          "options": {
+            "grid_columns": 6,
+            "dependencies": {
+              "rest_connection.enable_rest": true
+            }
+          }
+        },
+        "#rest_password": {
+          "type": "string",
+          "title": "REST API Password",
+          "format": "password",
+          "propertyOrder": 4,
+          "options": {
+            "grid_columns": 6,
+            "dependencies": {
+              "rest_connection.enable_rest": true
+            }
+          }
+        },
+        "default_org_id": {
+          "type": "integer",
+          "title": "Org ID",
+          "description": "Operating unit ID for REST API calls (e.g. 204 = Vision Operations)",
+          "default": 204,
+          "propertyOrder": 5,
+          "options": {
+            "grid_columns": 6,
+            "dependencies": {
+              "rest_connection.enable_rest": true
+            }
+          }
+        },
+        "test_rest_connection": {
+          "type": "button",
+          "title": "Test REST Connection",
+          "format": "sync-action",
+          "propertyOrder": 6,
+          "options": {
+            "grid_columns": 12,
+            "sync_action": "testRestConnection",
+            "dependencies": {
+              "rest_connection.enable_rest": true
+            }
+          }
+        }
+      }
     }
   }
 }
