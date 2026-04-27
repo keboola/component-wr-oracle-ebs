@@ -31,6 +31,14 @@ The configured DB user needs:
 - `INSERT` on each target interface table (e.g. `apps.ap_invoices_interface`, `apps.po_headers_interface`, `apps.mtl_transactions_interface`)
 - `EXECUTE` on `apps.fnd_request` (to submit concurrent programs) and `apps.fnd_global` (to initialize responsibility context)
 
+### SSH tunnel (optional)
+
+When the Oracle EBS database isn't directly reachable from Keboola — e.g. it sits inside a private VPC with a bastion host in front — enable the **SSH Tunnel** section in the configuration. The component opens an `sshtunnel`-managed forward to the configured `db_host:db_port` over an SSH session to the bastion, then the Oracle thin/thick driver connects to the local end of that tunnel.
+
+The Keboola UI auto-generates an SSH keypair for the configuration; share the **public key** with whoever administers the bastion so they add it to that bastion user's `~/.ssh/authorized_keys`. The component never sees an inbound SSH connection — it only opens an outbound one.
+
+The REST API does **not** flow through the SSH tunnel — it goes directly to `rest_url` over HTTPS. If the REST endpoint is also private, customers typically expose it through a separate VPN or reverse proxy.
+
 ### ISG REST API (for TCA / AR writes)
 
 For preset modes that use the ISG REST API (`tca.hz_create_organization`, `tca.hz_create_person`, `tca.hz_create_cust_account`, `ar.ar_invoice_create`), a separate ISG-enabled EBS responsibility is required — typically `SYSADMIN` or a custom responsibility with access to the `hzparty`, `hzcustaccount`, `hzpartysite`, and `arinvoice` services at `http://<host>:8000/webservices/rest/`.

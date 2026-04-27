@@ -1,7 +1,9 @@
 """Unit tests for pure functions: presets, configuration, mapping, CSV reading."""
 
 import csv
+import os
 import tempfile
+from unittest import mock
 
 import pytest
 from keboola.component.exceptions import UserException
@@ -197,6 +199,102 @@ class TestReadInputTable:
         rows, columns = _read_input_table(path)
         assert rows == []
         assert columns == ["ID", "NAME"]
+
+
+# ── SSH Tunnel Tests ──────────────────────────────────────────────
+
+
+class TestSSHOptions:
+    def test_parses_camelcase_aliases(self) -> None:
+        cfg = Configuration(
+            **{
+                "connection": {"db_host": "h", "db_service_name": "s", "db_user": "u", "#db_password": "p"},
+                "ssh_options": {
+                    "enabled": True,
+                    "user": "tunnel_user",
+                    "sshHost": "bastion.example.com",
+                    "sshPort": 2222,
+                    "keys": {"#private": "-----BEGIN KEY-----\nbody\n-----END KEY-----"},
+                },
+            }
+        )
+        assert cfg.ssh_options.enabled is True
+        assert cfg.ssh_options.user == "tunnel_user"
+        assert cfg.ssh_options.ssh_host == "bastion.example.com"
+        assert cfg.ssh_options.ssh_port == 2222
+        assert cfg.ssh_options.keys.private.startswith("-----BEGIN KEY-----")
+
+    def test_absent_block_defaults_to_disabled(self) -> None:
+        cfg = Configuration(
+            **{"connection": {"db_host": "h", "db_service_name": "s", "db_user": "u", "#db_password": "p"}}
+        )
+        assert cfg.ssh_options.enabled is False
+        assert cfg.ssh_options.ssh_host == ""
+        assert cfg.ssh_options.ssh_port == 22
+
+
+class TestComponentSshTunnel:
+    """Mock-based tests of Component._ensure_ssh_tunnel and _build_db_client."""
+
+    @staticmethod
+    def _component(ssh_enabled: bool):
+        # Minimal datadir so ComponentBase.__init__ succeeds without a real KBC env
+        tmp = tempfile.mkdtemp()
+        os.makedirs(os.path.join(tmp, "in", "tables"), exist_ok=True)
+        os.makedirs(os.path.join(tmp, "out", "tables"), exist_ok=True)
+        cfg = {
+            "parameters": {
+                "connection": {
+                    "db_host": "10.0.0.5",
+                    "db_port": 1521,
+                    "db_service_name": "EBSDB",
+                    "db_user": "u",
+                    "#db_password": "p",
+                },
+                "ssh_options": {
+                    "enabled": ssh_enabled,
+                    "user": "tunnel_user",
+                    "sshHost": "bastion",
+                    "sshPort": 22,
+                    "keys": {"#private": "-----BEGIN RSA PRIVATE KEY-----\nbody\n-----END RSA PRIVATE KEY-----"},
+                },
+            }
+        }
+        import json
+
+        with open(os.path.join(tmp, "config.json"), "w") as f:
+            json.dump(cfg, f)
+        with mock.patch.dict(os.environ, {"KBC_DATADIR": tmp}):
+            from component import Component
+
+            return Component()
+
+    def test_disabled_ssh_passes_original_host(self) -> None:
+        with mock.patch("component.SSHTunnelForwarder") as fake_tunnel:
+            comp = self._component(ssh_enabled=False)
+            client = comp._build_db_client()
+        fake_tunnel.assert_not_called()
+        assert client.dsn == "10.0.0.5:1521/EBSDB"
+
+    def test_enabled_ssh_routes_through_tunnel_and_is_idempotent(self) -> None:
+        with (
+            mock.patch("component.SSHTunnelForwarder") as fake_tunnel_cls,
+            mock.patch("component.get_private_key", return_value=mock.sentinel.pkey),
+        ):
+            fake_tunnel = fake_tunnel_cls.return_value
+            fake_tunnel.is_active = True
+            fake_tunnel.local_bind_port = 49152
+
+            comp = self._component(ssh_enabled=True)
+            client_a = comp._build_db_client()
+            client_b = comp._build_db_client()
+
+        # Tunnel constructed and started exactly once across both calls (idempotent).
+        assert fake_tunnel_cls.call_count == 1
+        fake_tunnel.start.assert_called_once()
+        # DB client sees localhost + ephemeral port from the tunnel.
+        assert client_a.dsn == "127.0.0.1:49152/EBSDB"
+        assert client_b.dsn == "127.0.0.1:49152/EBSDB"
 
 
 # ── Helpers ───────────────────────────────────────────────────────

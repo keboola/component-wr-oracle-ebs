@@ -7,8 +7,10 @@ dependencies = [
     "keboola-component>=1.9.0",
     "keboola-utils>=1.1.0",
     "oracledb>=2.5.0",
+    "paramiko>=3.4.0",
     "pydantic>=2.11.7",
     "requests>=2.32.0",
+    "sshtunnel>=0.4.0",
 ]
 
 [dependency-groups]

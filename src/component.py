@@ -17,24 +17,20 @@ import logging
 from keboola.component.base import ComponentBase, sync_action
 from keboola.component.exceptions import UserException
 from keboola.component.sync_actions import SelectElement
+from sshtunnel import BaseSSHTunnelForwarderError, SSHTunnelForwarder
 
 from configuration import Configuration, WriteMode, WriteOperation
 from ebs_presets import get_entity_list, get_module_list, get_preset
 from ebs_rest_client import EBSRestClient
 from oracle_client import OracleEBSClient
+from ssh_utils import SSHException, get_private_key
 
 
 class Component(ComponentBase):
     def __init__(self) -> None:
         super().__init__()
         self.params = Configuration(**self.configuration.parameters)
-        self.db_client = OracleEBSClient(
-            host=self.params.db_host,
-            port=self.params.db_port,
-            service_name=self.params.db_service_name,
-            user=self.params.db_user,
-            password=self.params.db_password,
-        )
+        self._ssh_tunnel: SSHTunnelForwarder | None = None
         self.rest_client: EBSRestClient | None = (
             EBSRestClient(
                 base_url=self.params.rest_url,
@@ -45,35 +41,99 @@ class Component(ComponentBase):
             else None
         )
 
+    def __del__(self) -> None:
+        tunnel = getattr(self, "_ssh_tunnel", None)
+        if tunnel is not None and getattr(tunnel, "is_active", False):
+            try:
+                tunnel.stop()
+            except Exception:
+                pass
+
+    # ── SSH tunnel + DB client factory ────────────────────────────
+
+    def _ensure_ssh_tunnel(self) -> None:
+        """Lazily start the SSH tunnel if `ssh_options.enabled` is true. Idempotent."""
+        ssh = self.params.ssh_options
+        if not ssh.enabled:
+            return
+        if self._ssh_tunnel is not None and self._ssh_tunnel.is_active:
+            return
+        try:
+            pkey = get_private_key(ssh.keys.private, None)
+        except SSHException as e:
+            raise UserException(f"SSH private key is invalid: {e}") from e
+
+        self._ssh_tunnel = SSHTunnelForwarder(
+            ssh_address_or_host=(ssh.ssh_host, ssh.ssh_port),
+            ssh_username=ssh.user,
+            ssh_pkey=pkey,
+            remote_bind_address=(self.params.db_host, self.params.db_port),
+            local_bind_address=("127.0.0.1", self.params.db_port),
+            ssh_config_file=None,
+            allow_agent=False,
+        )
+        try:
+            self._ssh_tunnel.start()
+        except BaseSSHTunnelForwarderError as e:
+            raise UserException("Failed to establish SSH connection. Recheck SSH configuration.") from e
+        logging.info(
+            "SSH tunnel established: %s:%d via %s@%s:%d",
+            self.params.db_host,
+            self.params.db_port,
+            ssh.user,
+            ssh.ssh_host,
+            ssh.ssh_port,
+        )
+
+    def _build_db_client(self) -> OracleEBSClient:
+        """Construct an OracleEBSClient, routing through the SSH tunnel if enabled."""
+        self._ensure_ssh_tunnel()
+        host = self.params.db_host
+        port = self.params.db_port
+        if self._ssh_tunnel is not None and self._ssh_tunnel.is_active:
+            host = "127.0.0.1"
+            port = self._ssh_tunnel.local_bind_port
+        return OracleEBSClient(
+            host=host,
+            port=port,
+            service_name=self.params.db_service_name,
+            user=self.params.db_user,
+            password=self.params.db_password,
+        )
+
     def run(self) -> None:
         """Main execution — reads input table and writes to Oracle EBS."""
-        self.params.validate_row()
+        try:
+            self.params.validate_row()
 
-        input_tables = self.get_input_tables_definitions()
-        if not input_tables:
-            raise UserException("No input tables found. Map at least one input table.")
+            input_tables = self.get_input_tables_definitions()
+            if not input_tables:
+                raise UserException("No input tables found. Map at least one input table.")
 
-        input_table = input_tables[0]
-        logging.info("Reading input table: %s", input_table.name)
+            input_table = input_tables[0]
+            logging.info("Reading input table: %s", input_table.name)
 
-        rows, columns = _read_input_table(input_table.full_path)
-        if not rows:
-            logging.warning("Input table is empty — nothing to write.")
-            return
+            rows, columns = _read_input_table(input_table.full_path)
+            if not rows:
+                logging.warning("Input table is empty — nothing to write.")
+                return
 
-        logging.info("Read %d rows with %d columns from input", len(rows), len(columns))
+            logging.info("Read %d rows with %d columns from input", len(rows), len(columns))
 
-        if self.params.destination.write_mode == WriteMode.PRESET:
-            self._write_preset(rows)
-        else:
-            self._write_custom(rows)
+            if self.params.destination.write_mode == WriteMode.PRESET:
+                self._write_preset(rows)
+            else:
+                self._write_custom(rows)
+        finally:
+            if self._ssh_tunnel is not None and self._ssh_tunnel.is_active:
+                self._ssh_tunnel.stop()
 
     # ── Sync Actions ──────────────────────────────────────────────
 
     @sync_action("testConnection")
     def test_connection(self) -> None:
         self.params.validate_connection()
-        result = self.db_client.test_connection()
+        result = self._build_db_client().test_connection()
         logging.info("DB Connection OK — %s", result["version"])
 
     @sync_action("testRestConnection")
@@ -98,13 +158,13 @@ class Component(ComponentBase):
     @sync_action("listOperatingUnits")
     def list_operating_units(self) -> list[SelectElement]:
         self.params.validate_connection()
-        rows = self.db_client.list_operating_units()
+        rows = self._build_db_client().list_operating_units()
         return [SelectElement(value=str(r["ORGANIZATION_ID"]), label=f"{r['NAME']}") for r in rows]
 
     @sync_action("listLedgers")
     def list_ledgers(self) -> list[SelectElement]:
         self.params.validate_connection()
-        rows = self.db_client.list_ledgers()
+        rows = self._build_db_client().list_ledgers()
         return [SelectElement(value=str(r["LEDGER_ID"]), label=f"{r['NAME']} ({r['CURRENCY_CODE']})") for r in rows]
 
     @sync_action("listTargetColumns")
@@ -131,7 +191,7 @@ class Component(ComponentBase):
         self.params.validate_connection()
         if not dest.target_table:
             raise UserException("Enter a target table name first.")
-        columns = self.db_client.get_table_columns(dest.target_table)
+        columns = self._build_db_client().get_table_columns(dest.target_table)
         if not columns:
             raise UserException(f"Table {dest.target_table} not found or has no columns.")
         return [SelectElement(value=r["COLUMN_NAME"], label=f"{r['COLUMN_NAME']} ({r['DATA_TYPE']})") for r in columns]
@@ -154,7 +214,7 @@ class Component(ComponentBase):
     def _write_custom(self, rows: list[dict]) -> None:
         """Custom mode — direct INSERT/UPSERT into specified Oracle table."""
         dest = self.params.destination
-        client = self.db_client
+        client = self._build_db_client()
 
         mapped_rows = _apply_mapping(rows, dest.column_mapping)
         all_columns = _collect_columns(mapped_rows)
@@ -175,7 +235,7 @@ class Component(ComponentBase):
         Step 3: Check status.
         """
         dest = self.params.destination
-        client = self.db_client
+        client = self._build_db_client()
         target_table = preset["target_table"]
 
         # Apply column mapping

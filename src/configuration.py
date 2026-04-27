@@ -14,6 +14,32 @@ class WriteOperation(StrEnum):
     UPSERT = "upsert"
 
 
+class SSHKeys(BaseModel):
+    """Key pair from Keboola's `ssh-editor` widget (private key is encrypted)."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="ignore")
+
+    private: str = Field(alias="#private", default="")
+    public: str = ""
+
+
+class SSHOptions(BaseModel):
+    """Optional SSH tunnel for the Oracle DB connection.
+
+    Schema fields use the platform's `ssh-editor` camelCase convention; we expose
+    pythonic snake_case attributes via Pydantic aliases. Matches
+    `component-elasticsearch` and `component-ex-oracle-ebs`.
+    """
+
+    model_config = ConfigDict(populate_by_name=True, extra="ignore")
+
+    enabled: bool = False
+    user: str = ""
+    ssh_host: str = Field(alias="sshHost", default="")
+    ssh_port: int = Field(alias="sshPort", default=22)
+    keys: SSHKeys = Field(default_factory=SSHKeys)
+
+
 class DestinationConfig(BaseModel):
     """Target Oracle EBS write configuration."""
 
@@ -50,6 +76,9 @@ class Configuration(BaseModel):
 
     # Default org_id for REST calls
     default_org_id: int = 204
+
+    # Optional SSH tunnel for the DB connection
+    ssh_options: SSHOptions = Field(default_factory=SSHOptions)
 
     # Row-level config
     destination: DestinationConfig = Field(default_factory=DestinationConfig)

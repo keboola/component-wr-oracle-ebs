@@ -144,6 +144,12 @@
           }
         }
       }
+    },
+    "ssh_options": {
+      "type": "object",
+      "title": "SSH Tunnel",
+      "format": "ssh-editor",
+      "propertyOrder": 4
     }
   }
 }
