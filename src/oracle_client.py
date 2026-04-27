@@ -336,12 +336,13 @@ class OracleEBSClient:
             arguments: Up to 100 program arguments (empty strings for unused)
         """
         args = arguments or []
-        # Pad to at least 10 arguments (Oracle requires positional args)
+        # Pad to at least 10 arguments — fnd_request.submit_request defaults the rest.
         while len(args) < 10:
             args.append("")
 
-        # Build argument bindings
-        arg_binds = ", ".join(f":arg{i}" for i in range(len(args)))
+        # All preceding parameters are passed as named (application => ...), so the
+        # argument binds must also be named — PL/SQL forbids positional after named.
+        arg_binds = ", ".join(f"argument{i + 1} => :arg{i}" for i in range(len(args)))
 
         plsql = f"""
         DECLARE

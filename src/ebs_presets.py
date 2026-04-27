@@ -346,7 +346,9 @@ PRESETS: dict[str, dict[str, dict]] = {
                 "URL",
             ],
             "default_primary_key": [],
-            "default_values": {},
+            "default_values": {
+                "CREATED_BY_MODULE": "TCA_V1_API",
+            },
             "response_id_field": "X_PARTY_ID",
             "multi_org": False,
             "uses_ledger": False,
@@ -363,7 +365,9 @@ PRESETS: dict[str, dict[str, dict]] = {
                 "KNOWN_AS",
             ],
             "default_primary_key": [],
-            "default_values": {},
+            "default_values": {
+                "CREATED_BY_MODULE": "TCA_V1_API",
+            },
             "response_id_field": "X_PARTY_ID",
             "multi_org": False,
             "uses_ledger": False,
@@ -380,7 +384,9 @@ PRESETS: dict[str, dict[str, dict]] = {
                 "PERSON_LAST_NAME",
             ],
             "default_primary_key": [],
-            "default_values": {},
+            "default_values": {
+                "CREATED_BY_MODULE": "TCA_V1_API",
+            },
             "response_id_field": "X_CUST_ACCOUNT_ID",
             "multi_org": False,
             "uses_ledger": False,
