@@ -167,6 +167,7 @@
           "propertyOrder": 12,
           "options": {
             "dependencies": {
+              "destination.write_mode": "preset",
               "destination.submit_program": true
             }
           }
@@ -179,6 +180,7 @@
           "propertyOrder": 13,
           "options": {
             "dependencies": {
+              "destination.write_mode": "preset",
               "destination.submit_program": true
             }
           }
@@ -191,6 +193,7 @@
           "propertyOrder": 14,
           "options": {
             "dependencies": {
+              "destination.write_mode": "preset",
               "destination.submit_program": true
             }
           }
