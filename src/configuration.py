@@ -73,6 +73,11 @@ class Configuration(BaseModel):
     rest_user: str = ""
     rest_password: str = Field(alias="#rest_password", default="")
 
+    # Optional APPS-equivalent credential, used only by the FND_GLOBAL/FND_REQUEST block
+    # in submit_concurrent_request. Falls back to db_user/db_password when unset.
+    apps_user: str = ""
+    apps_password: str = Field(alias="#apps_password", default="")
+
     # Default org_id for REST calls
     default_org_id: int = 204
 
@@ -97,6 +102,12 @@ class Configuration(BaseModel):
                 # Drop the UI-only enable_rest flag before merging
                 rest_conn = {k: v for k, v in rest_conn.items() if k != "enable_rest"}
                 data = {**data, **rest_conn}
+        if isinstance(data, dict) and "apps_connection" in data:
+            apps_conn = data.pop("apps_connection")
+            if isinstance(apps_conn, dict):
+                # Drop the UI-only enable_apps_user flag before merging
+                apps_conn = {k: v for k, v in apps_conn.items() if k != "enable_apps_user"}
+                data = {**data, **apps_conn}
         return data
 
     def __init__(self, **data: object) -> None:
@@ -123,6 +134,12 @@ class Configuration(BaseModel):
             raise UserException("'rest_user' is required for REST API authentication.")
         if not self.rest_password:
             raise UserException("'rest_password' is required for REST API authentication.")
+
+    def validate_apps_connection(self) -> None:
+        if not self.apps_user:
+            raise UserException("'apps_user' is required when 'Use Dedicated APPS-Equivalent User' is enabled.")
+        if not self.apps_password:
+            raise UserException("'apps_password' is required when 'Use Dedicated APPS-Equivalent User' is enabled.")
 
     def validate_row(self) -> None:
         self.validate_connection()

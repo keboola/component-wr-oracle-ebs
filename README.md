@@ -12,7 +12,7 @@ Write data to Oracle E-Business Suite via direct database connection using the `
 | Column Mapping | Rename input columns to match Oracle target columns |
 | Multi-Org Support | Automatically inject `ORG_ID` for multi-org interface tables |
 | GL Ledger Support | Automatically inject `LEDGER_ID` for General Ledger interface |
-| Sync Actions | Test connection, list operating units, list ledgers, list modules, list entities, list target columns |
+| Sync Actions | Test connection, test REST connection, test APPS connection, list operating units, list ledgers, list modules, list entities, list target columns |
 
 ## Requirements
 
@@ -30,6 +30,8 @@ The configured DB user needs:
 - `SELECT` on `apps.hr_operating_units`, `apps.gl_ledgers`, `apps.fnd_concurrent_requests`, `sys.all_tables`, `sys.all_tab_columns`
 - `INSERT` on each target interface table (e.g. `apps.ap_invoices_interface`, `apps.po_headers_interface`, `apps.mtl_transactions_interface`)
 - `EXECUTE` on `apps.fnd_request` (to submit concurrent programs) and `apps.fnd_global` (to initialize responsibility context)
+
+> **Note**: `apps.fnd_global.apps_initialize` and the `apps.fnd_core_log` package it calls internally are `AUTHID CURRENT_USER`. When invoked by a non-APPS user (e.g. `keboola_wr`), unqualified table references inside those packages resolve in the caller's namespace and typically fail with `ORA-00942: table or view does not exist`. The grants list to make a non-APPS user work is large (~70 synonyms + ~30 grants per Oracle Support Note 822225.1) and Oracle has no equivalent note for `fnd_request.submit_request`. The component therefore supports an **optional second credential pair** (`apps_user` / `#apps_password`) used **only** for the FND_GLOBAL/FND_REQUEST PL/SQL block during concurrent program submission. Bulk INSERTs into `_INTERFACE` tables continue to run as `db_user`. See *Connection Settings* below.
 
 ### SSH tunnel (optional)
 
@@ -67,8 +69,13 @@ For preset modes that use the ISG REST API (`tca.hz_create_organization`, `tca.h
 | `db_host` | Oracle database server hostname or IP |
 | `db_port` | Port (default: 1521) |
 | `db_service_name` | Oracle service name (e.g. `ebs_EBSDB`) |
-| `#db_user` | Database username (encrypted) |
+| `db_user` | Database username — used for bulk INSERTs into `_INTERFACE` tables and read sync actions |
 | `#db_password` | Database password (encrypted) |
+| `rest_url` | (Optional) ISG REST API base URL for TCA / AR writes |
+| `rest_user` | (Optional) ISG REST API username (typically `SYSADMIN`) |
+| `#rest_password` | (Optional) ISG REST API password (encrypted) |
+| `apps_user` | (Optional) APPS-equivalent username, used **only** to submit concurrent programs (`FND_GLOBAL.APPS_INITIALIZE` + `FND_REQUEST.SUBMIT_REQUEST`). Required if `db_user` is not APPS and lacks the grants from Oracle Support Note 822225.1. Falls back to `db_user` when empty. |
+| `#apps_password` | (Optional) APPS-equivalent password (encrypted). Falls back to `#db_password` when empty. |
 
 ### Write Row (configRowSchema)
 

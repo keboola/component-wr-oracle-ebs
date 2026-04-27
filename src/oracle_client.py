@@ -91,14 +91,27 @@ def _safe_commit(conn: Any) -> None:
 
 
 class OracleEBSClient:
-    def __init__(self, host: str, port: int, service_name: str, user: str, password: str) -> None:
+    def __init__(
+        self,
+        host: str,
+        port: int,
+        service_name: str,
+        user: str,
+        password: str,
+        apps_user: str = "",
+        apps_password: str = "",
+    ) -> None:
         self.dsn = f"{host}:{port}/{service_name}"
         self.user = user
         self.password = password
+        # APPS-equivalent credential used only by submit_concurrent_request for the
+        # FND_GLOBAL/FND_REQUEST PL/SQL block. Empty values fall back to (user, password).
+        self.apps_user = apps_user
+        self.apps_password = apps_password
 
-    def _connect(self) -> oracledb.Connection:
+    def _open(self, user: str, password: str) -> oracledb.Connection:
         try:
-            conn = oracledb.connect(user=self.user, password=self.password, dsn=self.dsn)
+            conn = oracledb.connect(user=user, password=password, dsn=self.dsn)
             # Permit ISO-8601 style date strings from CSV input to be implicit-cast into DATE columns.
             with conn.cursor() as cur:
                 cur.execute("ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'")
@@ -115,17 +128,29 @@ class OracleEBSClient:
                 )
                 raise UserException(
                     f"Cannot connect to Oracle EBS at {self.dsn}: {reason}. "
-                    f"The user '{self.user}' likely has only the 10G verifier, which the thin "
+                    f"The user '{user}' likely has only the 10G verifier, which the thin "
                     f"driver doesn't support. Either:\n"
                     f"  1. Let the component use thick mode (default in the Keboola-provided "
                     f"Docker image). If you're running locally, install Oracle Instant Client "
                     f"and set ORACLE_CLIENT_LIB_DIR.\n"
                     f"  2. Ask your DBA to reset the user's password so 11G/12C verifiers are "
-                    f"generated:  ALTER USER {self.user} IDENTIFIED BY <same-or-new-password>;\n"
+                    f"generated:  ALTER USER {user} IDENTIFIED BY <same-or-new-password>;\n"
                     f"  3. Ensure `sec_case_sensitive_logon` is TRUE at the DB/PDB level.\n"
                     f"Original error: {e}"
                 ) from e
             raise UserException(f"Cannot connect to Oracle EBS at {self.dsn}: {e}") from e
+
+    def _connect(self) -> oracledb.Connection:
+        return self._open(self.user, self.password)
+
+    def _connect_as_apps(self) -> oracledb.Connection:
+        # Used by submit_concurrent_request. FND_GLOBAL and FND_CORE_LOG are AUTHID
+        # CURRENT_USER, so the unqualified table references inside resolve in the
+        # caller's namespace — the regular db_user (e.g. keboola_wr) typically lacks
+        # those synonyms/grants. Fall back to db_user when apps_user is unset.
+        user = self.apps_user or self.user
+        password = self.apps_password or self.password
+        return self._open(user, password)
 
     # ── Connection & Metadata ─────────────────────────────────────
 
@@ -135,6 +160,14 @@ class OracleEBSClient:
                 cur.execute("SELECT banner FROM v$version WHERE ROWNUM = 1")
                 row = cur.fetchone()
                 return {"version": row[0] if row else "unknown", "dsn": self.dsn}
+
+    def test_apps_connection(self) -> dict[str, str]:
+        user = self.apps_user or self.user
+        with self._connect_as_apps() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT banner FROM v$version WHERE ROWNUM = 1")
+                row = cur.fetchone()
+                return {"version": row[0] if row else "unknown", "dsn": self.dsn, "user": user}
 
     def list_operating_units(self) -> list[dict]:
         sql = """
@@ -382,7 +415,9 @@ class OracleEBSClient:
         logging.info("Submitting concurrent request: %s.%s", application, program)
 
         try:
-            with self._connect() as conn:
+            # FND_GLOBAL.APPS_INITIALIZE + FND_REQUEST.SUBMIT_REQUEST require an
+            # APPS-equivalent connection (see _connect_as_apps for rationale).
+            with self._connect_as_apps() as conn:
                 with conn.cursor() as cur:
                     request_id_var = cur.var(oracledb.NUMBER)
                     params["request_id"] = request_id_var

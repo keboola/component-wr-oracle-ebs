@@ -132,6 +132,30 @@ class TestConfiguration:
         with pytest.raises(UserException, match="rest_url"):
             cfg.validate_rest_connection()
 
+    def test_flatten_apps_connection(self) -> None:
+        cfg = Configuration(
+            **{
+                "connection": {
+                    "db_host": "localhost",
+                    "db_service_name": "EBSDB",
+                    "db_user": "wr",
+                    "#db_password": "x",
+                },
+                "apps_connection": {
+                    "enable_apps_user": True,
+                    "apps_user": "APPS",
+                    "#apps_password": "apps",
+                },
+            }
+        )
+        assert cfg.apps_user == "APPS"
+        assert cfg.apps_password == "apps"
+
+    def test_validate_apps_connection_missing_user(self) -> None:
+        cfg = Configuration()
+        with pytest.raises(UserException, match="apps_user"):
+            cfg.validate_apps_connection()
+
     def test_validate_row_custom_valid(self) -> None:
         cfg = _make_config(destination={"write_mode": "custom", "target_table": "APPS.T", "write_operation": "insert"})
         cfg.validate_row()  # should not raise
@@ -176,6 +200,54 @@ class TestCollectColumns:
 
     def test_empty_rows(self) -> None:
         assert _collect_columns([]) == set()
+
+
+# ── OracleEBSClient credential routing ────────────────────────────
+
+
+class TestOracleEBSClientCredentials:
+    def test_apps_connection_uses_apps_credentials_when_set(self) -> None:
+        from oracle_client import OracleEBSClient
+
+        client = OracleEBSClient(
+            host="h",
+            port=1521,
+            service_name="EBSDB",
+            user="keboola_wr",
+            password="wr_pwd",
+            apps_user="APPS",
+            apps_password="apps_pwd",
+        )
+        with mock.patch("oracle_client.oracledb.connect") as connect:
+            connect.return_value.cursor.return_value.__enter__.return_value.execute.return_value = None
+            client._connect_as_apps()
+        connect.assert_called_once_with(user="APPS", password="apps_pwd", dsn="h:1521/EBSDB")
+
+    def test_apps_connection_falls_back_to_db_user_when_unset(self) -> None:
+        from oracle_client import OracleEBSClient
+
+        client = OracleEBSClient(host="h", port=1521, service_name="EBSDB", user="keboola_wr", password="wr_pwd")
+        with mock.patch("oracle_client.oracledb.connect") as connect:
+            connect.return_value.cursor.return_value.__enter__.return_value.execute.return_value = None
+            client._connect_as_apps()
+        connect.assert_called_once_with(user="keboola_wr", password="wr_pwd", dsn="h:1521/EBSDB")
+
+    def test_regular_connect_always_uses_db_user(self) -> None:
+        from oracle_client import OracleEBSClient
+
+        client = OracleEBSClient(
+            host="h",
+            port=1521,
+            service_name="EBSDB",
+            user="keboola_wr",
+            password="wr_pwd",
+            apps_user="APPS",
+            apps_password="apps_pwd",
+        )
+        with mock.patch("oracle_client.oracledb.connect") as connect:
+            connect.return_value.cursor.return_value.__enter__.return_value.execute.return_value = None
+            client._connect()
+        connect.assert_called_once_with(user="keboola_wr", password="wr_pwd", dsn="h:1521/EBSDB")
 
 
 # ── CSV Reading Tests ─────────────────────────────────────────────

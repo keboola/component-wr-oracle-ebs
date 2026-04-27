@@ -148,11 +148,70 @@
         }
       }
     },
+    "apps_connection": {
+      "type": "object",
+      "title": "APPS-Equivalent User (for Concurrent Programs)",
+      "format": "grid-strict",
+      "propertyOrder": 3,
+      "properties": {
+        "enable_apps_user": {
+          "type": "boolean",
+          "title": "Use Dedicated APPS-Equivalent User for Concurrent Programs",
+          "description": "Required if 'DB Username' is not APPS and lacks the grants from Oracle Support Note 822225.1. The component opens a separate connection with these credentials only when submitting concurrent programs (FND_GLOBAL.APPS_INITIALIZE + FND_REQUEST.SUBMIT_REQUEST). Bulk INSERTs always run as the regular DB user.",
+          "format": "checkbox",
+          "default": false,
+          "propertyOrder": 1,
+          "options": {
+            "grid_columns": 12
+          }
+        },
+        "apps_user": {
+          "type": "string",
+          "title": "APPS Username",
+          "description": "Database user with APPS-equivalent grants (typically APPS). Used only to submit concurrent programs.",
+          "propertyOrder": 2,
+          "options": {
+            "grid_columns": 6,
+            "dependencies": {
+              "apps_connection.enable_apps_user": true
+            }
+          }
+        },
+        "#apps_password": {
+          "type": "string",
+          "title": "APPS Password",
+          "format": "password",
+          "propertyOrder": 3,
+          "options": {
+            "grid_columns": 6,
+            "dependencies": {
+              "apps_connection.enable_apps_user": true
+            }
+          }
+        },
+        "test_apps_connection": {
+          "type": "button",
+          "title": "Test APPS Connection",
+          "format": "sync-action",
+          "propertyOrder": 4,
+          "options": {
+            "grid_columns": 12,
+            "async": {
+              "label": "Test APPS Connection",
+              "action": "testAppsConnection"
+            },
+            "dependencies": {
+              "apps_connection.enable_apps_user": true
+            }
+          }
+        }
+      }
+    },
     "ssh_options": {
       "type": "object",
       "title": "SSH Tunnel",
       "format": "ssh-editor",
-      "propertyOrder": 4
+      "propertyOrder": 5
     }
   }
 }

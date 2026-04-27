@@ -99,6 +99,8 @@ class Component(ComponentBase):
             service_name=self.params.db_service_name,
             user=self.params.db_user,
             password=self.params.db_password,
+            apps_user=self.params.apps_user,
+            apps_password=self.params.apps_password,
         )
 
     def run(self) -> None:
@@ -143,6 +145,12 @@ class Component(ComponentBase):
             raise UserException("REST API is not enabled in connection settings.")
         rest_result = self.rest_client.test_connection()
         logging.info("REST Connection OK — %s", rest_result["url"])
+
+    @sync_action("testAppsConnection")
+    def test_apps_connection(self) -> None:
+        self.params.validate_apps_connection()
+        result = self._build_db_client().test_apps_connection()
+        logging.info("APPS Connection OK — user=%s, version=%s", result["user"], result["version"])
 
     @sync_action("listModules")
     def list_modules(self) -> list[SelectElement]:
