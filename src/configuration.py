@@ -14,21 +14,11 @@ class WriteOperation(StrEnum):
     UPSERT = "upsert"
 
 
-class SSHKeys(BaseModel):
-    """Key pair from Keboola's `ssh-editor` widget (private key is encrypted)."""
-
-    model_config = ConfigDict(populate_by_name=True, extra="ignore")
-
-    private: str = Field(alias="#private", default="")
-    public: str = ""
-
-
 class SSHOptions(BaseModel):
     """Optional SSH tunnel for the Oracle DB connection.
 
-    Schema fields use the platform's `ssh-editor` camelCase convention; we expose
-    pythonic snake_case attributes via Pydantic aliases. Matches
-    `component-elasticsearch` and `component-ex-oracle-ebs`.
+    Schema lives in a bordered `grid-strict` section. Camel-case aliases
+    (`sshHost`, `sshPort`) match the keys emitted by the JSON-Schema editor.
     """
 
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
@@ -37,7 +27,7 @@ class SSHOptions(BaseModel):
     user: str = ""
     ssh_host: str = Field(alias="sshHost", default="")
     ssh_port: int = Field(alias="sshPort", default=22)
-    keys: SSHKeys = Field(default_factory=SSHKeys)
+    private_key: str = Field(alias="#private_key", default="")
 
 
 class DestinationConfig(BaseModel):

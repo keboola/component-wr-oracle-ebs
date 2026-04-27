@@ -59,7 +59,7 @@ class Component(ComponentBase):
         if self._ssh_tunnel is not None and self._ssh_tunnel.is_active:
             return
         try:
-            pkey = get_private_key(ssh.keys.private, None)
+            pkey = get_private_key(ssh.private_key, None)
         except SSHException as e:
             raise UserException(f"SSH private key is invalid: {e}") from e
 

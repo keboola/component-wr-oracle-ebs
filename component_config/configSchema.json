@@ -137,7 +137,10 @@
           "propertyOrder": 6,
           "options": {
             "grid_columns": 12,
-            "sync_action": "testRestConnection",
+            "async": {
+              "label": "Test REST Connection",
+              "action": "testRestConnection"
+            },
             "dependencies": {
               "rest_connection.enable_rest": true
             }
@@ -148,8 +151,70 @@
     "ssh_options": {
       "type": "object",
       "title": "SSH Tunnel",
-      "format": "ssh-editor",
-      "propertyOrder": 4
+      "format": "grid-strict",
+      "propertyOrder": 4,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "title": "Enable SSH Tunnel",
+          "description": "Open an SSH tunnel to a bastion host before connecting to the Oracle DB. Useful when EBS is not directly reachable from Keboola.",
+          "format": "checkbox",
+          "default": false,
+          "propertyOrder": 1,
+          "options": {
+            "grid_columns": 12
+          }
+        },
+        "sshHost": {
+          "type": "string",
+          "title": "SSH Host",
+          "description": "Hostname or IP of the bastion / jump host",
+          "propertyOrder": 2,
+          "options": {
+            "grid_columns": 4,
+            "dependencies": {
+              "ssh_options.enabled": true
+            }
+          }
+        },
+        "sshPort": {
+          "type": "integer",
+          "title": "SSH Port",
+          "default": 22,
+          "propertyOrder": 3,
+          "options": {
+            "grid_columns": 4,
+            "dependencies": {
+              "ssh_options.enabled": true
+            }
+          }
+        },
+        "user": {
+          "type": "string",
+          "title": "SSH User",
+          "description": "SSH username on the bastion",
+          "propertyOrder": 4,
+          "options": {
+            "grid_columns": 4,
+            "dependencies": {
+              "ssh_options.enabled": true
+            }
+          }
+        },
+        "#private_key": {
+          "type": "string",
+          "title": "SSH Private Key",
+          "description": "PEM-formatted private key. The matching public key must be authorized on the bastion.",
+          "format": "textarea",
+          "propertyOrder": 5,
+          "options": {
+            "grid_columns": 12,
+            "dependencies": {
+              "ssh_options.enabled": true
+            }
+          }
+        }
+      }
     }
   }
 }
