@@ -19,16 +19,17 @@
         "module": {
           "type": "string",
           "title": "EBS Module",
-          "format": "select",
-          "enum": [],
+          "enum": ["ap", "ar", "gl", "po", "inv", "tca"],
           "propertyOrder": 2,
           "options": {
-            "async": {
-              "label": "Load Modules",
-              "action": "listModules",
-              "autoload": true,
-              "creatable": true
-            },
+            "enum_titles": [
+              "Accounts Payable (AP)",
+              "Accounts Receivable (AR)",
+              "General Ledger (GL)",
+              "Purchasing (PO)",
+              "Inventory (INV)",
+              "Trading Community (TCA)"
+            ],
             "dependencies": {
               "destination.write_mode": "preset"
             }
