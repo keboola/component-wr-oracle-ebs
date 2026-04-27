@@ -60,11 +60,19 @@ class EBSRestClient:
             msg = output.get("X_MSG_DATA")
             msg_count = output.get("X_MSG_COUNT", "0")
             # When X_MSG_COUNT > 1, EBS often leaves X_MSG_DATA empty and expects
-            # FND_MSG_PUB.GET to be called per-message. Since ISG doesn't expose
-            # that, dump the full response so the actual validation messages are
-            # visible — they are usually nested elsewhere in the response.
+            # FND_MSG_PUB.GET to be called per-message. ISG doesn't expose that
+            # via REST, and FND_MSG_PUB is session-local so a separate JDBC
+            # connection can't retrieve it. Surface the full payload (often the
+            # nested OutputParameters carry hints) plus an actionable pointer.
             if not msg:
-                msg = f"EBS returned {msg_count} error message(s). Full response: {json.dumps(data)[:1500]}"
+                msg = (
+                    f"EBS returned {msg_count} error message(s) but did not include them in the "
+                    f"response (X_MSG_DATA is null — Oracle expects FND_MSG_PUB.GET per message, "
+                    f"which ISG REST does not expose). Check $LOG_HOME/ora/10.1.3/oafm/<server>/"
+                    f"oafm_server1.out on the EBS apps tier (or apps.fnd_log_messages if "
+                    f"AFCORE_LOGGING_ENABLED='Y') for the actual validation errors. "
+                    f"Full response: {json.dumps(data)[:1500]}"
+                )
             prefix = "EBS API error" if status == "E" else "EBS unexpected error"
             raise UserException(f"{prefix}: {msg}")
 

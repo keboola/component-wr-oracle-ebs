@@ -512,3 +512,26 @@ class OracleEBSClient:
         """
         rows = self.execute_query(sql, params={"group_id": group_id})
         return {r[status_column]: r["CNT"] for r in rows}
+
+    def fetch_rejection_details(self, sql: str, group_id: str | int, limit: int = 20) -> list[dict]:
+        """Run a preset-supplied rejection-detail query. The SQL is expected to take a
+        bind variable :group_id and return one row per rejected interface row, with at
+        least a 'REASON' column (and optionally identifying columns like INVOICE_NUM).
+        Returns up to `limit` rows; capped to keep error messages readable.
+
+        Uses the APPS-equivalent connection (falls back to db_user when not configured)
+        because rejection tables typically live in the module schema (AP, GL, PO, …) and
+        the writer user usually lacks direct grants on them. Best-effort — on any error
+        (insufficient privs, missing object, language mismatch) returns [] so the caller
+        can fall back to the original concurrent-program error message.
+        """
+        try:
+            with self._connect_as_apps() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(sql, parameters={"group_id": group_id})
+                    columns = [d[0] for d in cur.description] if cur.description else []
+                    rows = [dict(zip(columns, row, strict=False)) for row in cur.fetchall()]
+        except (oracledb.DatabaseError, UserException) as e:
+            logging.warning("Could not fetch rejection details: %s", e)
+            return []
+        return rows[:limit]

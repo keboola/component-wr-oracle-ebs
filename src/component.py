@@ -103,6 +103,26 @@ class Component(ComponentBase):
             apps_password=self.params.apps_password,
         )
 
+    @staticmethod
+    def _raise_with_rejection_details(
+        client: OracleEBSClient, status_check: dict | None, group_id: str | int, original: UserException
+    ) -> None:
+        """Augment a concurrent-program failure with row-level rejection reasons when possible.
+
+        Many EBS interface programs (APXIIMPT, GLLEZL, POXPOPDOI, …) signal "rows rejected"
+        via status_code='E' + a generic completion_text. The actual reasons live in
+        per-module rejection tables (e.g. AP_INTERFACE_REJECTIONS) — surface them via the
+        preset's `rejection_query` so the user sees what's actually wrong with the data.
+        """
+        if not status_check or "rejection_query" not in status_check:
+            raise original
+        details = client.fetch_rejection_details(status_check["rejection_query"], group_id)
+        if not details:
+            raise original
+        lines = [f"  - {row}" for row in details]
+        message = f"{original}\n\nRejected rows ({len(details)}):\n" + "\n".join(lines)
+        raise UserException(message) from original
+
     def run(self) -> None:
         """Main execution — reads input table and writes to Oracle EBS."""
         try:
@@ -321,11 +341,18 @@ class Component(ComponentBase):
             # ── Step 3: Wait for completion and check status
             if dest.wait_for_completion:
                 logging.info("Step 3/3: Waiting for request %d to complete...", request_id)
-                client.wait_for_request(
-                    request_id,
-                    poll_interval=dest.poll_interval,
-                    timeout=dest.poll_timeout,
-                )
+                try:
+                    client.wait_for_request(
+                        request_id,
+                        poll_interval=dest.poll_interval,
+                        timeout=dest.poll_timeout,
+                    )
+                except UserException as wait_err:
+                    # Concurrent program reported failure. Some programs (e.g. APXIIMPT)
+                    # exit with status='E' even when they ran successfully and merely
+                    # rejected rows for business reasons — surface those rejections so
+                    # the user sees what's actually wrong with the data.
+                    self._raise_with_rejection_details(client, status_check, group_id, wait_err)
 
                 # Check interface table status
                 if status_check:
@@ -336,6 +363,14 @@ class Component(ComponentBase):
                         status_check["status_column"],
                     )
                     logging.info("Interface table status for group %s: %s", group_id, statuses)
+                    rejected = statuses.get("REJECTED", 0)
+                    if rejected:
+                        self._raise_with_rejection_details(
+                            client,
+                            status_check,
+                            group_id,
+                            UserException(f"{rejected} row(s) rejected during interface processing."),
+                        )
             else:
                 logging.info("Step 3/3: Skipped — wait_for_completion is disabled. Request ID: %d", request_id)
         else:

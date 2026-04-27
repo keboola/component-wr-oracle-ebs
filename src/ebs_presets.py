@@ -68,6 +68,25 @@ PRESETS: dict[str, dict[str, dict]] = {
             "status_check": {
                 "group_column": "GROUP_ID",
                 "status_column": "STATUS",
+                # Query that returns one row per rejected invoice with a REASON.
+                # Joined to ap_interface_rejections (linked by parent_id=invoice_id)
+                # and fnd_lookup_values for human-readable message text.
+                "rejection_query": """
+                    SELECT i.INVOICE_NUM,
+                           i.VENDOR_ID,
+                           i.STATUS,
+                           NVL(l.MEANING, r.REJECT_LOOKUP_CODE) AS REASON
+                      FROM apps.ap_invoices_interface i
+                      LEFT JOIN apps.ap_interface_rejections r
+                        ON r.PARENT_ID = i.INVOICE_ID
+                       AND r.PARENT_TABLE = 'AP_INVOICES_INTERFACE'
+                      LEFT JOIN apps.fnd_lookup_values l
+                        ON l.LOOKUP_TYPE = 'NLS TRANSLATION'
+                       AND l.LOOKUP_CODE = r.REJECT_LOOKUP_CODE
+                       AND l.LANGUAGE = USERENV('LANG')
+                     WHERE i.GROUP_ID = :group_id
+                       AND i.STATUS = 'REJECTED'
+                """,
             },
             "multi_org": True,
             "uses_ledger": False,
@@ -172,7 +191,13 @@ PRESETS: dict[str, dict[str, dict]] = {
                 "application": "SQLGL",
                 "program": "GLLEZL",
                 "description": "Journal Import",
-                "arguments": ["", "", "", "", "", "", "", ""],
+                # GLLEZL params (look up via $SRS$.GLLEZL): all 6 of these are REQUIRED.
+                # 1=Data Access Set ID, 2=Source ('Keboola'), 3=Ledger (from row config),
+                # 4=Group ID, 5=Post Errors to Suspense, 6=Create Summary Journals,
+                # 7=Import Descriptive Flexfields. Real values must be patched in by
+                # the caller — placeholder defaults below will be rejected by the program.
+                # TODO: wire ledger_id and data_access_set_id from configuration.
+                "arguments": [None, "Keboola", None, None, "N", "N", "N"],
                 # user_id=0 → SYSADMIN; resp_id=20434 → General Ledger Super User (application_id=101)
                 "fnd_context": {"user_id": 0, "resp_id": 20434, "resp_appl_id": 101},
             },
@@ -218,7 +243,33 @@ PRESETS: dict[str, dict[str, dict]] = {
                 "application": "PO",
                 "program": "POXPOPDOI",
                 "description": "Import Standard Purchase Orders",
-                "arguments": ["", "", "", "", "", "", "", "", "", ""],
+                # POXPOPDOI params (look up via $SRS$.POXPOPDOI): 18 positional, 3 REQUIRED.
+                # 1=p_buyer_id, 2=p_document_type, 3=p_document_subtype,
+                # 4=p_create_items (REQUIRED 'Y'/'N'), 5=p_create_sourcing_rules_flag,
+                # 6=p_approved_status (REQUIRED — typically 'INCOMPLETE' or 'APPROVED'),
+                # 7=p_rel_gen_metho, 8=p_selected_batch_id, 9=p_org_id (from row config),
+                # 10..15 sourcing/CLM flags, 16=p_clm_flag (REQUIRED 'Y'/'N'),
+                # 17=p_batch_size, 18=p_gather_stats.
+                "arguments": [
+                    None,
+                    "STANDARD",
+                    "STANDARD",
+                    "N",
+                    None,
+                    "INCOMPLETE",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "N",
+                    None,
+                    None,
+                ],
                 # user_id=0 → SYSADMIN; resp_id=20707 → Purchasing Super User (application_id=201)
                 "fnd_context": {"user_id": 0, "resp_id": 20707, "resp_appl_id": 201},
             },
