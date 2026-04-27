@@ -85,7 +85,7 @@ class TestConfiguration:
                     "db_host": "localhost",
                     "db_port": 1521,
                     "db_service_name": "EBSDB",
-                    "#db_user": "user",
+                    "db_user": "user",
                     "#db_password": "pass",
                 },
                 "destination": {"write_mode": "preset", "module": "ap", "entity": "ap_invoices_interface"},
@@ -204,7 +204,7 @@ class TestReadInputTable:
 
 def _make_config(**overrides: dict) -> Configuration:
     base = {
-        "connection": {"db_host": "h", "db_service_name": "s", "#db_user": "u", "#db_password": "p"},
+        "connection": {"db_host": "h", "db_service_name": "s", "db_user": "u", "#db_password": "p"},
     }
     base.update(overrides)
     return Configuration(**base)

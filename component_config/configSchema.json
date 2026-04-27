@@ -7,7 +7,7 @@
       "title": "Database Connection",
       "format": "grid-strict",
       "propertyOrder": 1,
-      "required": ["db_host", "db_service_name", "#db_user", "#db_password"],
+      "required": ["db_host", "db_service_name", "db_user", "#db_password"],
       "properties": {
         "db_host": {
           "type": "string",
@@ -44,7 +44,7 @@
             "grid_columns": 12
           }
         },
-        "#db_user": {
+        "db_user": {
           "type": "string",
           "title": "DB Username",
           "description": "Database user with write access to EBS interface tables",
@@ -93,7 +93,7 @@
             }
           }
         },
-        "#rest_user": {
+        "rest_user": {
           "type": "string",
           "title": "REST API Username",
           "description": "EBS REST API user (typically SYSADMIN)",

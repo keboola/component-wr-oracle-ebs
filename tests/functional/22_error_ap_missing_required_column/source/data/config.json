@@ -5,7 +5,7 @@
       "db_host": "34.140.37.168",
       "db_port": 1521,
       "db_service_name": "ebs_EBSDB",
-      "#db_user": "PLACEHOLDER",
+      "db_user": "PLACEHOLDER",
       "#db_password": "PLACEHOLDER"
     },
     "destination": {

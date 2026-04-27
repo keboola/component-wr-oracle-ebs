@@ -40,12 +40,12 @@ class Configuration(BaseModel):
     db_host: str = ""
     db_port: int = 1521
     db_service_name: str = ""
-    db_user: str = Field(alias="#db_user", default="")
+    db_user: str = ""
     db_password: str = Field(alias="#db_password", default="")
 
     # ISG REST API connection (for TCA/AR writes)
     rest_url: str = ""
-    rest_user: str = Field(alias="#rest_user", default="")
+    rest_user: str = ""
     rest_password: str = Field(alias="#rest_password", default="")
 
     # Default org_id for REST calls
