@@ -14,11 +14,20 @@ class WriteOperation(StrEnum):
     UPSERT = "upsert"
 
 
+class SSHKeys(BaseModel):
+    """Keypair payload emitted by the platform `ssh-editor` widget."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="ignore")
+
+    private: str = Field(alias="#private", default="")
+    public: str = ""
+
+
 class SSHOptions(BaseModel):
     """Optional SSH tunnel for the Oracle DB connection.
 
-    Schema lives in a bordered `grid-strict` section. Camel-case aliases
-    (`sshHost`, `sshPort`) match the keys emitted by the JSON-Schema editor.
+    Rendered by the platform `ssh-editor` widget. Camel-case aliases match
+    the keys emitted by that widget.
     """
 
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
@@ -27,7 +36,7 @@ class SSHOptions(BaseModel):
     user: str = ""
     ssh_host: str = Field(alias="sshHost", default="")
     ssh_port: int = Field(alias="sshPort", default=22)
-    private_key: str = Field(alias="#private_key", default="")
+    keys: SSHKeys = Field(default_factory=SSHKeys)
 
 
 class DestinationConfig(BaseModel):

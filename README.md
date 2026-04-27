@@ -35,7 +35,7 @@ The configured DB user needs:
 
 When the Oracle EBS database isn't directly reachable from Keboola — e.g. it sits inside a private VPC with a bastion host in front — enable the **SSH Tunnel** section in the configuration. The component opens an `sshtunnel`-managed forward to the configured `db_host:db_port` over an SSH session to the bastion, then the Oracle thin/thick driver connects to the local end of that tunnel.
 
-Configure four fields: SSH host, SSH port (default 22), SSH user, and a PEM-formatted private key. Generate the keypair on a trusted machine (`ssh-keygen -t rsa -b 4096 -f keboola_ebs`), paste the **private** key into the configuration, and have the bastion administrator authorize the matching **public** key on the bastion's `~/.ssh/authorized_keys`. The component never accepts inbound connections — it only opens an outbound SSH session.
+The Keboola UI auto-generates an SSH keypair when you enable the section — copy the displayed **public** key onto the bastion's `~/.ssh/authorized_keys`, then fill in SSH host, SSH port (default 22), and SSH user. The component never accepts inbound connections — it only opens an outbound SSH session.
 
 The REST API does **not** flow through the SSH tunnel — it goes directly to `rest_url` over HTTPS. If the REST endpoint is also private, customers typically expose it through a separate VPN or reverse proxy.
 

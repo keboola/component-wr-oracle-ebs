@@ -214,7 +214,10 @@ class TestSSHOptions:
                     "user": "tunnel_user",
                     "sshHost": "bastion.example.com",
                     "sshPort": 2222,
-                    "#private_key": "-----BEGIN KEY-----\nbody\n-----END KEY-----",
+                    "keys": {
+                        "#private": "-----BEGIN KEY-----\nbody\n-----END KEY-----",
+                        "public": "ssh-rsa AAA...",
+                    },
                 },
             }
         )
@@ -222,7 +225,8 @@ class TestSSHOptions:
         assert cfg.ssh_options.user == "tunnel_user"
         assert cfg.ssh_options.ssh_host == "bastion.example.com"
         assert cfg.ssh_options.ssh_port == 2222
-        assert cfg.ssh_options.private_key.startswith("-----BEGIN KEY-----")
+        assert cfg.ssh_options.keys.private.startswith("-----BEGIN KEY-----")
+        assert cfg.ssh_options.keys.public == "ssh-rsa AAA..."
 
     def test_absent_block_defaults_to_disabled(self) -> None:
         cfg = Configuration(
@@ -256,7 +260,10 @@ class TestComponentSshTunnel:
                     "user": "tunnel_user",
                     "sshHost": "bastion",
                     "sshPort": 22,
-                    "#private_key": "-----BEGIN RSA PRIVATE KEY-----\nbody\n-----END RSA PRIVATE KEY-----",
+                    "keys": {
+                        "#private": "-----BEGIN RSA PRIVATE KEY-----\nbody\n-----END RSA PRIVATE KEY-----",
+                        "public": "ssh-rsa AAA...",
+                    },
                 },
             }
         }
