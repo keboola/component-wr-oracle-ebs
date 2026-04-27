@@ -26,7 +26,8 @@
             "async": {
               "label": "Load Modules",
               "action": "listModules",
-              "autoload": true
+              "autoload": true,
+              "creatable": true
             },
             "dependencies": {
               "destination.write_mode": "preset"
@@ -42,7 +43,8 @@
           "options": {
             "async": {
               "label": "Load Entities",
-              "action": "listEntities"
+              "action": "listEntities",
+              "creatable": true
             },
             "dependencies": {
               "destination.write_mode": "preset"
@@ -50,7 +52,7 @@
           }
         },
         "org_id": {
-          "type": "string",
+          "type": "integer",
           "title": "Operating Unit (Org ID)",
           "format": "select",
           "enum": [],
@@ -58,7 +60,8 @@
           "options": {
             "async": {
               "label": "Load Operating Units",
-              "action": "listOperatingUnits"
+              "action": "listOperatingUnits",
+              "creatable": true
             },
             "dependencies": {
               "destination.write_mode": "preset"
@@ -74,7 +77,8 @@
           "options": {
             "async": {
               "label": "Load Ledgers",
-              "action": "listLedgers"
+              "action": "listLedgers",
+              "creatable": true
             },
             "dependencies": {
               "destination.write_mode": "preset",
@@ -139,6 +143,56 @@
           "description": "Number of rows per INSERT/MERGE batch (default 1000).",
           "default": 1000,
           "propertyOrder": 10
+        },
+        "submit_program": {
+          "type": "boolean",
+          "title": "Submit Concurrent Program",
+          "description": "After loading rows into the staging interface table, trigger the EBS concurrent program (e.g. Payables Open Interface Import) that imports them into the live tables. Only applies to interface-based presets.",
+          "default": true,
+          "format": "checkbox",
+          "propertyOrder": 11,
+          "options": {
+            "dependencies": {
+              "destination.write_mode": "preset"
+            }
+          }
+        },
+        "wait_for_completion": {
+          "type": "boolean",
+          "title": "Wait for Completion",
+          "description": "Block until the submitted concurrent program finishes. If disabled, the component returns immediately after submission.",
+          "default": true,
+          "format": "checkbox",
+          "propertyOrder": 12,
+          "options": {
+            "dependencies": {
+              "destination.submit_program": true
+            }
+          }
+        },
+        "poll_interval": {
+          "type": "integer",
+          "title": "Poll Interval (seconds)",
+          "description": "How often to check the concurrent program status while waiting.",
+          "default": 10,
+          "propertyOrder": 13,
+          "options": {
+            "dependencies": {
+              "destination.submit_program": true
+            }
+          }
+        },
+        "poll_timeout": {
+          "type": "integer",
+          "title": "Poll Timeout (seconds)",
+          "description": "Max seconds to wait for the concurrent program to finish before giving up.",
+          "default": 600,
+          "propertyOrder": 14,
+          "options": {
+            "dependencies": {
+              "destination.submit_program": true
+            }
+          }
         }
       }
     }
