@@ -307,11 +307,15 @@ class Component(ComponentBase):
         cp = preset.get("concurrent_program")
         if cp and dest.submit_program:
             logging.info("Step 2/3: Submitting concurrent program %s.%s", cp["application"], cp["program"])
+            fnd = cp.get("fnd_context", {})
             request_id = client.submit_concurrent_request(
                 application=cp["application"],
                 program=cp["program"],
                 description=cp.get("description", ""),
                 arguments=cp.get("arguments", []),
+                user_id=fnd.get("user_id", 0),
+                resp_id=fnd.get("resp_id", 20639),
+                resp_appl_id=fnd.get("resp_appl_id", 200),
             )
 
             # ── Step 3: Wait for completion and check status

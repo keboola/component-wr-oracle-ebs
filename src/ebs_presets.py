@@ -56,6 +56,9 @@ PRESETS: dict[str, dict[str, dict]] = {
                 "program": "APXIIMPT",
                 "description": "Payables Open Interface Import",
                 "arguments": ["Keboola", "", "", "", "", "", "N", "N", "N", "N"],
+                # FND session context for fnd_global.apps_initialize
+                # user_id=0 → SYSADMIN; resp_id=20639 → Payables Manager (application_id=200)
+                "fnd_context": {"user_id": 0, "resp_id": 20639, "resp_appl_id": 200},
             },
             "status_check": {
                 "group_column": "GROUP_ID",
@@ -165,6 +168,8 @@ PRESETS: dict[str, dict[str, dict]] = {
                 "program": "GLLEZL",
                 "description": "Journal Import",
                 "arguments": ["", "", "", "", "", "", "", ""],
+                # user_id=0 → SYSADMIN; resp_id=20434 → General Ledger Super User (application_id=101)
+                "fnd_context": {"user_id": 0, "resp_id": 20434, "resp_appl_id": 101},
             },
             "status_check": {
                 "group_column": "GROUP_ID",
@@ -209,6 +214,8 @@ PRESETS: dict[str, dict[str, dict]] = {
                 "program": "POXPOPDOI",
                 "description": "Import Standard Purchase Orders",
                 "arguments": ["", "", "", "", "", "", "", "", "", ""],
+                # user_id=0 → SYSADMIN; resp_id=20707 → Purchasing Super User (application_id=201)
+                "fnd_context": {"user_id": 0, "resp_id": 20707, "resp_appl_id": 201},
             },
             "status_check": {
                 "group_column": "BATCH_ID",
