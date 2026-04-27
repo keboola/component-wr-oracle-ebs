@@ -347,13 +347,13 @@ class OracleEBSClient:
         DECLARE
             v_request_id NUMBER;
         BEGIN
-            fnd_global.apps_initialize(
+            apps.fnd_global.apps_initialize(
                 user_id      => :user_id,
                 resp_id      => :resp_id,
                 resp_appl_id => :resp_appl_id
             );
 
-            v_request_id := fnd_request.submit_request(
+            v_request_id := apps.fnd_request.submit_request(
                 application => :application,
                 program     => :program,
                 description => :description,
