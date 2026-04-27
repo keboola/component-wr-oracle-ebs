@@ -16,4 +16,7 @@ jobs:
       vendor: keboola
       test_build_target: test
       docker_build_target: production
+      # Push README/description/URL changes to Developer Portal on every commit,
+      # even before ECR push is fully configured.
+      update_properties: true
     secrets: inherit
