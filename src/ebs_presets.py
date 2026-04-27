@@ -55,7 +55,12 @@ PRESETS: dict[str, dict[str, dict]] = {
                 "application": "SQLAP",
                 "program": "APXIIMPT",
                 "description": "Payables Open Interface Import",
-                "arguments": ["Keboola", "", "", "", "", "", "N", "N", "N", "N"],
+                # Positional args for APXIIMPT (Payables Open Interface Import) — 11 params used:
+                # 1=Operating Unit (NULL → MOAC default), 2=Source (REQUIRED), 3=Group,
+                # 4=Batch Name (REQUIRED), 5=Hold Name, 6=Hold Reason, 7=GL Date,
+                # 8=Purge, 9=Trace Switch, 10=Debug Switch, 11=Summarize Report.
+                # Source and Batch Name must be non-null; everything else can be NULL.
+                "arguments": [None, "Keboola", None, "Keboola", None, None, None, "N", "N", "N", "N"],
                 # FND session context for fnd_global.apps_initialize
                 # user_id=0 → SYSADMIN; resp_id=20639 → Payables Manager (application_id=200)
                 "fnd_context": {"user_id": 0, "resp_id": 20639, "resp_appl_id": 200},

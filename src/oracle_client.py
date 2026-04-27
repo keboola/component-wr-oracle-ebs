@@ -368,10 +368,13 @@ class OracleEBSClient:
             resp_appl_id: Responsibility application ID
             arguments: Up to 100 program arguments (empty strings for unused)
         """
-        args = arguments or []
+        # Empty strings are bound as 0-length VARCHAR2 by oracledb, which Oracle Reports
+        # rejects when the parameter is typed (e.g. P_GL_DATE → REP-0613/ORA-01841).
+        # Map "" → None so they bind as SQL NULL, which programs treat as "not provided".
+        args: list[str | None] = [None if a == "" else a for a in (arguments or [])]
         # Pad to at least 10 arguments — fnd_request.submit_request defaults the rest.
         while len(args) < 10:
-            args.append("")
+            args.append(None)
 
         # All preceding parameters are passed as named (application => ...), so the
         # argument binds must also be named — PL/SQL forbids positional after named.
@@ -401,7 +404,7 @@ class OracleEBSClient:
         END;
         """
 
-        params = {
+        params: dict[str, str | int | None] = {
             "user_id": user_id,
             "resp_id": resp_id,
             "resp_appl_id": resp_appl_id,
