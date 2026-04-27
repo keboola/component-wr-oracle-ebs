@@ -59,8 +59,12 @@ class EBSRestClient:
         if status in ("E", "U"):
             msg = output.get("X_MSG_DATA")
             msg_count = output.get("X_MSG_COUNT", "0")
+            # When X_MSG_COUNT > 1, EBS often leaves X_MSG_DATA empty and expects
+            # FND_MSG_PUB.GET to be called per-message. Since ISG doesn't expose
+            # that, dump the full response so the actual validation messages are
+            # visible — they are usually nested elsewhere in the response.
             if not msg:
-                msg = f"EBS returned {msg_count} error message(s). Check EBS logs for details."
+                msg = f"EBS returned {msg_count} error message(s). Full response: {json.dumps(data)[:1500]}"
             prefix = "EBS API error" if status == "E" else "EBS unexpected error"
             raise UserException(f"{prefix}: {msg}")
 
@@ -73,13 +77,14 @@ class EBSRestClient:
 
         NOTE: Oracle EBS ISG is sensitive to JSON key order — user-provided fields
         MUST come before CREATED_BY_MODULE or the API returns X_RETURN_STATUS=E.
+        Caller-supplied CREATED_BY_MODULE wins; default falls back to TCA_V2_API.
         """
         payload = {
             "InputParameters": {
                 "P_INIT_MSG_LIST": "T",
                 "P_ORGANIZATION_REC": {
-                    **org_rec,
-                    "CREATED_BY_MODULE": "TCA_V2_API",
+                    **{k: v for k, v in org_rec.items() if k != "CREATED_BY_MODULE"},
+                    "CREATED_BY_MODULE": org_rec.get("CREATED_BY_MODULE", "TCA_V2_API"),
                 },
             }
         }
@@ -91,8 +96,8 @@ class EBSRestClient:
             "InputParameters": {
                 "P_INIT_MSG_LIST": "T",
                 "P_PERSON_REC": {
-                    **person_rec,
-                    "CREATED_BY_MODULE": "TCA_V2_API",
+                    **{k: v for k, v in person_rec.items() if k != "CREATED_BY_MODULE"},
+                    "CREATED_BY_MODULE": person_rec.get("CREATED_BY_MODULE", "TCA_V2_API"),
                 },
             }
         }
@@ -100,16 +105,17 @@ class EBSRestClient:
 
     def create_cust_account(self, account_rec: dict, person_rec: dict | None = None) -> dict:
         """Create a customer account."""
+        person_rec = person_rec or {}
         payload = {
             "InputParameters": {
                 "P_INIT_MSG_LIST": "T",
                 "P_CUST_ACCOUNT_REC": {
-                    **account_rec,
-                    "CREATED_BY_MODULE": "TCA_V2_API",
+                    **{k: v for k, v in account_rec.items() if k != "CREATED_BY_MODULE"},
+                    "CREATED_BY_MODULE": account_rec.get("CREATED_BY_MODULE", "TCA_V2_API"),
                 },
                 "P_PERSON_REC": {
-                    **(person_rec or {}),
-                    "CREATED_BY_MODULE": "TCA_V2_API",
+                    **{k: v for k, v in person_rec.items() if k != "CREATED_BY_MODULE"},
+                    "CREATED_BY_MODULE": person_rec.get("CREATED_BY_MODULE", "TCA_V2_API"),
                 },
                 "P_CREATE_PROFILE_AMT": "F",
             }
@@ -122,8 +128,8 @@ class EBSRestClient:
             "InputParameters": {
                 "P_INIT_MSG_LIST": "T",
                 "P_PARTY_SITE_REC": {
-                    **party_site_rec,
-                    "CREATED_BY_MODULE": "TCA_V2_API",
+                    **{k: v for k, v in party_site_rec.items() if k != "CREATED_BY_MODULE"},
+                    "CREATED_BY_MODULE": party_site_rec.get("CREATED_BY_MODULE", "TCA_V2_API"),
                 },
                 "P_LOCATION_REC": {
                     **location_rec,
