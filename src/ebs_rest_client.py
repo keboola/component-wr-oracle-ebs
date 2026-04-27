@@ -15,11 +15,35 @@ from keboola.component.exceptions import UserException
 
 
 class EBSRestClient:
-    def __init__(self, base_url: str, user: str, password: str) -> None:
+    def __init__(
+        self,
+        base_url: str,
+        user: str,
+        password: str,
+        default_org_id: int | None = None,
+        responsibility: str = "RECEIVABLES_MANAGER",
+        resp_application: str = "AR",
+    ) -> None:
         self.base_url = base_url.rstrip("/")
         self.session = requests.Session()
         self.session.auth = (user, password)
         self.session.headers.update({"Content-Type": "application/json", "Accept": "application/json"})
+        # MOAC context propagated to ISG via RESTHeader. Without it Oracle calls run with
+        # Responsibility=null / Org_id=-1 and TCA/AR APIs reject with silent FND_MSG_PUB
+        # errors. Receivables Manager is the standard Vision responsibility that has both
+        # TCA party and AR invoice grants; can be overridden per-customer config later.
+        self.default_org_id = default_org_id
+        self.responsibility = responsibility
+        self.resp_application = resp_application
+
+    def _rest_header(self, org_id: int | None = None) -> dict[str, str]:
+        return {
+            "Responsibility": self.responsibility,
+            "RespApplication": self.resp_application,
+            "SecurityGroup": "STANDARD",
+            "NLSLanguage": "AMERICAN",
+            "Org_Id": str(org_id if org_id is not None else (self.default_org_id or 204)),
+        }
 
     def test_connection(self) -> dict[str, str]:
         """Verify REST API is reachable by hitting the base URL."""
@@ -80,7 +104,7 @@ class EBSRestClient:
 
     # ── TCA Operations ────────────────────────────────────────────
 
-    def create_organization(self, org_rec: dict) -> dict:
+    def create_organization(self, org_rec: dict, org_id: int | None = None) -> dict:
         """Create a TCA organization (party).
 
         NOTE: Oracle EBS ISG is sensitive to JSON key order — user-provided fields
@@ -89,6 +113,7 @@ class EBSRestClient:
         """
         payload = {
             "InputParameters": {
+                "RESTHeader": self._rest_header(org_id),
                 "P_INIT_MSG_LIST": "T",
                 "P_ORGANIZATION_REC": {
                     **{k: v for k, v in org_rec.items() if k != "CREATED_BY_MODULE"},
@@ -98,10 +123,11 @@ class EBSRestClient:
         }
         return self.call_service("/hzparty/create_organization/", payload)
 
-    def create_person(self, person_rec: dict) -> dict:
+    def create_person(self, person_rec: dict, org_id: int | None = None) -> dict:
         """Create a TCA person (party)."""
         payload = {
             "InputParameters": {
+                "RESTHeader": self._rest_header(org_id),
                 "P_INIT_MSG_LIST": "T",
                 "P_PERSON_REC": {
                     **{k: v for k, v in person_rec.items() if k != "CREATED_BY_MODULE"},
@@ -111,11 +137,12 @@ class EBSRestClient:
         }
         return self.call_service("/hzparty/create_person/", payload)
 
-    def create_cust_account(self, account_rec: dict, person_rec: dict | None = None) -> dict:
+    def create_cust_account(self, account_rec: dict, person_rec: dict | None = None, org_id: int | None = None) -> dict:
         """Create a customer account."""
         person_rec = person_rec or {}
         payload = {
             "InputParameters": {
+                "RESTHeader": self._rest_header(org_id),
                 "P_INIT_MSG_LIST": "T",
                 "P_CUST_ACCOUNT_REC": {
                     **{k: v for k, v in account_rec.items() if k != "CREATED_BY_MODULE"},

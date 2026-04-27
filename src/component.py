@@ -36,6 +36,7 @@ class Component(ComponentBase):
                 base_url=self.params.rest_url,
                 user=self.params.rest_user,
                 password=self.params.rest_password,
+                default_org_id=self.params.default_org_id,
             )
             if self.params.rest_url
             else None
@@ -429,13 +430,13 @@ class Component(ComponentBase):
     def _call_rest_service(rest_client: EBSRestClient, service: str, row: dict, org_id: int) -> dict:
         """Dispatch to the appropriate REST client method."""
         if service == "create_organization":
-            return rest_client.create_organization(row)
+            return rest_client.create_organization(row, org_id=org_id)
         if service == "create_person":
-            return rest_client.create_person(row)
+            return rest_client.create_person(row, org_id=org_id)
         if service == "create_cust_account":
             account_rec = {k: v for k, v in row.items() if k.startswith("ACCOUNT_") or k == "CUSTOMER_CLASS_CODE"}
             person_rec = {k: v for k, v in row.items() if k.startswith("PERSON_")}
-            return rest_client.create_cust_account(account_rec, person_rec if person_rec else None)
+            return rest_client.create_cust_account(account_rec, person_rec if person_rec else None, org_id=org_id)
         if service == "create_ar_invoice":
             header_rec = {
                 k: v for k, v in row.items() if k not in ("QUANTITY_INVOICED", "UNIT_SELLING_PRICE", "LINE_DESCRIPTION")
