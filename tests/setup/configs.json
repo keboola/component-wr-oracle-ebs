@@ -388,14 +388,14 @@
           "write_operation": "insert",
           "submit_program": false,
           "batch_size": 10,
-          "column_mapping": {
-            "my_inv_num": "INVOICE_NUM",
-            "my_inv_date": "INVOICE_DATE",
-            "my_vendor_id": "VENDOR_ID",
-            "my_amount": "INVOICE_AMOUNT",
-            "my_currency": "INVOICE_CURRENCY_CODE",
-            "my_description": "DESCRIPTION"
-          }
+          "column_mapping": [
+            {"source": "my_inv_num", "destination": "INVOICE_NUM"},
+            {"source": "my_inv_date", "destination": "INVOICE_DATE"},
+            {"source": "my_vendor_id", "destination": "VENDOR_ID"},
+            {"source": "my_amount", "destination": "INVOICE_AMOUNT"},
+            {"source": "my_currency", "destination": "INVOICE_CURRENCY_CODE"},
+            {"source": "my_description", "destination": "DESCRIPTION"}
+          ]
         }
       },
       "storage": {
@@ -544,6 +544,73 @@
               "destination": "ap_invoices_missing_vendor.csv"
             }
           ]
+        }
+      }
+    }
+  },
+  {
+    "name": "24_reloadColumns_ap_preset",
+    "description": "Sync action: reloadColumns pre-populates column_mapping with AP invoices target columns (preset mode, no DB needed)",
+    "config": {
+      "action": "reloadColumns",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "preset",
+          "module": "ap",
+          "entity": "ap_invoices_interface",
+          "org_id": 204
+        }
+      }
+    }
+  },
+  {
+    "name": "25_reloadColumns_preserves_existing_sources",
+    "description": "Sync action: reloadColumns keeps existing source assignments on reload",
+    "config": {
+      "action": "reloadColumns",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "preset",
+          "module": "ap",
+          "entity": "ap_invoices_interface",
+          "org_id": 204,
+          "column_mapping": [
+            {"source": "my_inv_num", "destination": "INVOICE_NUM"},
+            {"source": "my_amount", "destination": "INVOICE_AMOUNT"}
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "26_error_reloadColumns_missing_module",
+    "description": "Error: reloadColumns without module/entity should fail (exit 1)",
+    "config": {
+      "action": "reloadColumns",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "preset"
         }
       }
     }

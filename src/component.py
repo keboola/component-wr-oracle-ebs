@@ -19,7 +19,7 @@ from keboola.component.exceptions import UserException
 from keboola.component.sync_actions import SelectElement
 from sshtunnel import BaseSSHTunnelForwarderError, SSHTunnelForwarder
 
-from configuration import Configuration, WriteMode, WriteOperation
+from configuration import ColumnMapping, Configuration, WriteMode, WriteOperation
 from ebs_presets import get_entity_list, get_module_list, get_preset
 from ebs_rest_client import EBSRestClient
 from oracle_client import OracleEBSClient
@@ -224,6 +224,55 @@ class Component(ComponentBase):
         if not columns:
             raise UserException(f"Table {dest.target_table} not found or has no columns.")
         return [SelectElement(value=r["COLUMN_NAME"], label=f"{r['COLUMN_NAME']} ({r['DATA_TYPE']})") for r in columns]
+
+    @sync_action("reloadColumns")
+    def reload_columns(self) -> dict:
+        """Pre-populate the column mapping table with target Oracle columns.
+
+        Existing source assignments are preserved on reload — only new destination
+        columns appear with empty source. Returns the full `destination` object so
+        the platform's shallow-merge wires it back into the form.
+        """
+        # Read raw params — sync actions run with partial config and self.params
+        # may fail validation if required preset fields aren't filled in yet.
+        raw_destination = self.configuration.parameters.get("destination", {})
+
+        target_columns = self._resolve_target_columns(raw_destination)
+        if not target_columns:
+            raise UserException(
+                "No target columns found. Pick a module/entity (preset) or target table (custom) first."
+            )
+
+        existing_by_dest = {
+            m.get("destination"): m
+            for m in raw_destination.get("column_mapping", [])
+            if isinstance(m, dict) and m.get("destination")
+        }
+        new_mapping = [existing_by_dest.get(col, {"source": "", "destination": col}) for col in target_columns]
+
+        return {
+            "type": "data",
+            "data": {"destination": {**raw_destination, "column_mapping": new_mapping}},
+        }
+
+    def _resolve_target_columns(self, raw_destination: dict) -> list[str]:
+        write_mode = raw_destination.get("write_mode", "preset")
+        if write_mode == "preset":
+            module = raw_destination.get("module", "")
+            entity = raw_destination.get("entity", "")
+            if not module or not entity:
+                raise UserException("Select a module and entity first.")
+            preset = get_preset(module, entity)
+            if not preset:
+                raise UserException(f"Unknown preset: module={module!r}, entity={entity!r}")
+            cols = list(preset.get("required_columns", [])) + list(preset.get("optional_columns", []))
+            cols.extend(preset.get("sequence_columns", {}).keys())
+            return list(dict.fromkeys(cols))
+        target_table = raw_destination.get("target_table", "")
+        if not target_table:
+            raise UserException("Enter a target table name first.")
+        self.params.validate_connection()
+        return [r["COLUMN_NAME"] for r in self._build_db_client().get_table_columns(target_table)]
 
     # ── Write Paths ───────────────────────────────────────────────
 
@@ -479,19 +528,16 @@ def _read_input_table(path: str) -> tuple[list[dict], list[str]]:
     return rows, columns
 
 
-def _apply_mapping(rows: list[dict], mapping: dict[str, str]) -> list[dict]:
-    """Apply column mapping — rename input columns to target columns."""
+def _apply_mapping(rows: list[dict], mapping: list[ColumnMapping]) -> list[dict]:
+    """Filter to mapped columns and rename to target column names.
+
+    Only columns listed in `mapping` reach the output. Unmapped input columns are dropped.
+    Empty mapping is treated as opt-out (passthrough), not "drop everything".
+    """
     if not mapping:
         return rows
-    upper_mapping = {k.upper(): v.upper() for k, v in mapping.items()}
-    mapped: list[dict] = []
-    for row in rows:
-        new_row: dict = {}
-        for col, val in row.items():
-            target_col = upper_mapping.get(col, col)
-            new_row[target_col] = val
-        mapped.append(new_row)
-    return mapped
+    rename = {cm.source.upper(): cm.destination.upper() for cm in mapping}
+    return [{rename[col.upper()]: val for col, val in row.items() if col.upper() in rename} for row in rows]
 
 
 def _collect_columns(rows: list[dict]) -> set[str]:

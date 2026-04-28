@@ -16,14 +16,32 @@
       "write_operation": "insert",
       "submit_program": false,
       "batch_size": 10,
-      "column_mapping": {
-        "my_inv_num": "INVOICE_NUM",
-        "my_inv_date": "INVOICE_DATE",
-        "my_vendor_id": "VENDOR_ID",
-        "my_amount": "INVOICE_AMOUNT",
-        "my_currency": "INVOICE_CURRENCY_CODE",
-        "my_description": "DESCRIPTION"
-      }
+      "column_mapping": [
+        {
+          "source": "my_inv_num",
+          "destination": "INVOICE_NUM"
+        },
+        {
+          "source": "my_inv_date",
+          "destination": "INVOICE_DATE"
+        },
+        {
+          "source": "my_vendor_id",
+          "destination": "VENDOR_ID"
+        },
+        {
+          "source": "my_amount",
+          "destination": "INVOICE_AMOUNT"
+        },
+        {
+          "source": "my_currency",
+          "destination": "INVOICE_CURRENCY_CODE"
+        },
+        {
+          "source": "my_description",
+          "destination": "DESCRIPTION"
+        }
+      ]
     }
   },
   "storage": {

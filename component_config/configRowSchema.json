@@ -129,13 +129,38 @@
           }
         },
         "column_mapping": {
-          "type": "object",
+          "type": "array",
           "title": "Column Mapping",
-          "description": "Map input column names to target Oracle column names. Leave empty if column names already match.",
-          "format": "grid",
+          "description": "Map input CSV columns to target Oracle columns. Only listed columns are written; unmapped input columns are dropped. Use 'Reload Target Columns' to pre-populate destination columns.",
+          "format": "table",
+          "uniqueItems": true,
           "propertyOrder": 9,
-          "additionalProperties": {
-            "type": "string"
+          "items": {
+            "type": "object",
+            "required": ["source", "destination"],
+            "properties": {
+              "source": {
+                "type": "string",
+                "title": "Source Column",
+                "format": "select",
+                "enum": [],
+                "options": {
+                  "tags": true,
+                  "watch": {"columns": "_metadata_.table.columns"},
+                  "enumSource": "columns"
+                }
+              },
+              "destination": {
+                "type": "string",
+                "title": "Target Column"
+              }
+            }
+          },
+          "options": {
+            "async": {
+              "label": "Reload Target Columns",
+              "action": "reloadColumns"
+            }
           }
         },
         "batch_size": {

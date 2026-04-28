@@ -9,7 +9,7 @@ import pytest
 from keboola.component.exceptions import UserException
 
 from component import _apply_mapping, _collect_columns, _read_input_table
-from configuration import Configuration, WriteMode, WriteOperation
+from configuration import ColumnMapping, Configuration, WriteMode, WriteOperation
 from ebs_presets import get_entity_list, get_module_list, get_preset
 
 # ── Preset Tests ──────────────────────────────────────────────────
@@ -178,19 +178,23 @@ class TestConfiguration:
 class TestColumnMapping:
     def test_no_mapping_passthrough(self) -> None:
         rows = [{"COL_A": "1", "COL_B": "2"}]
-        assert _apply_mapping(rows, {}) == rows
+        assert _apply_mapping(rows, []) == rows
 
     def test_rename_columns(self) -> None:
         rows = [{"INV_ID": "100", "INV_NUM": "INV-001"}]
-        result = _apply_mapping(rows, {"INV_ID": "INVOICE_ID", "INV_NUM": "INVOICE_NUM"})
+        mapping = [
+            ColumnMapping(source="INV_ID", destination="INVOICE_ID"),
+            ColumnMapping(source="INV_NUM", destination="INVOICE_NUM"),
+        ]
+        result = _apply_mapping(rows, mapping)
         assert result[0]["INVOICE_ID"] == "100"
+        assert result[0]["INVOICE_NUM"] == "INV-001"
         assert "INV_ID" not in result[0]
 
-    def test_partial_mapping(self) -> None:
+    def test_partial_mapping_drops_unmapped(self) -> None:
         rows = [{"INV_ID": "100", "AMOUNT": "500"}]
-        result = _apply_mapping(rows, {"INV_ID": "INVOICE_ID"})
-        assert result[0]["INVOICE_ID"] == "100"
-        assert result[0]["AMOUNT"] == "500"
+        result = _apply_mapping(rows, [ColumnMapping(source="INV_ID", destination="INVOICE_ID")])
+        assert result[0] == {"INVOICE_ID": "100"}
 
 
 class TestCollectColumns:

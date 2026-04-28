@@ -14,6 +14,12 @@ class WriteOperation(StrEnum):
     UPSERT = "upsert"
 
 
+class ColumnMapping(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    source: str
+    destination: str
+
+
 class SSHKeys(BaseModel):
     """Keypair payload emitted by the platform `ssh-editor` widget."""
 
@@ -50,7 +56,7 @@ class DestinationConfig(BaseModel):
     target_table: str = ""
     write_operation: WriteOperation = WriteOperation.INSERT
     primary_key: list[str] = Field(default_factory=list)
-    column_mapping: dict[str, str] = Field(default_factory=dict)
+    column_mapping: list[ColumnMapping] = Field(default_factory=list)
     batch_size: int = 1000
     submit_program: bool = True
     wait_for_completion: bool = True
