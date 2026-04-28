@@ -8,7 +8,7 @@
       "db_user": "PLACEHOLDER",
       "#db_password": "PLACEHOLDER"
     },
-    "apps_user": "PLACEHOLDER",
+    "apps_user": "APPS",
     "#apps_password": "PLACEHOLDER"
   }
 }
