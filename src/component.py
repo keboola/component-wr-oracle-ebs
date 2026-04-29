@@ -14,6 +14,7 @@ import hashlib
 import json as _json
 import logging
 
+import requests
 from keboola.component.base import ComponentBase, sync_action
 from keboola.component.exceptions import UserException
 from keboola.component.sync_actions import SelectElement
@@ -225,13 +226,41 @@ class Component(ComponentBase):
             raise UserException(f"Table {dest.target_table} not found or has no columns.")
         return [SelectElement(value=r["COLUMN_NAME"], label=f"{r['COLUMN_NAME']} ({r['DATA_TYPE']})") for r in columns]
 
+    @staticmethod
+    def _normalize(name: str) -> str:
+        """Normalize a name for fuzzy matching: strip separators and lowercase."""
+        return name.replace("_", "").replace("-", "").replace(" ", "").replace(".", "").lower()
+
+    @classmethod
+    def _fuzzy_match(cls, value: str, candidates: list[str]) -> str:
+        """Return the best matching candidate for value, or '' if none found.
+
+        Priority:
+        1. Exact match
+        2. Case-insensitive match
+        3. Normalized match (strip _, -, spaces, dots then lowercase)
+        """
+        if value in candidates:
+            return value
+        value_lower = value.lower()
+        for candidate in candidates:
+            if candidate.lower() == value_lower:
+                return candidate
+        value_norm = cls._normalize(value)
+        for candidate in candidates:
+            if cls._normalize(candidate) == value_norm:
+                return candidate
+        return ""
+
     @sync_action("reloadColumns")
     def reload_columns(self) -> dict:
-        """Pre-populate the column mapping table with target Oracle columns.
+        """Append target Oracle columns to the column mapping with fuzzy-matched sources.
 
-        Existing source assignments are preserved on reload — only new destination
-        columns appear with empty source. Returns the full `destination` object so
-        the platform's shallow-merge wires it back into the form.
+        Append-only behaviour: every existing entry in `column_mapping` is preserved
+        verbatim. Only target columns that are not already present as a destination
+        get appended, with `source` fuzzy-matched against the assigned input table's
+        columns (exact → case-insensitive → normalized). Returns the full
+        `destination` object so the platform's shallow-merge wires it back in.
         """
         # Read raw params — sync actions run with partial config and self.params
         # may fail validation if required preset fields aren't filled in yet.
@@ -243,17 +272,62 @@ class Component(ComponentBase):
                 "No target columns found. Pick a module/entity (preset) or target table (custom) first."
             )
 
-        existing_by_dest = {
-            m.get("destination"): m
-            for m in raw_destination.get("column_mapping", [])
-            if isinstance(m, dict) and m.get("destination")
-        }
-        new_mapping = [existing_by_dest.get(col, {"source": "", "destination": col}) for col in target_columns]
+        existing_mapping = [m for m in raw_destination.get("column_mapping", []) if isinstance(m, dict)]
+        existing_destinations = {m.get("destination") for m in existing_mapping if m.get("destination")}
+
+        input_columns = self._get_input_columns()
+
+        appended = [
+            {"source": self._fuzzy_match(col, input_columns), "destination": col}
+            for col in target_columns
+            if col not in existing_destinations
+        ]
 
         return {
             "type": "data",
-            "data": {"destination": {**raw_destination, "column_mapping": new_mapping}},
+            "data": {"destination": {**raw_destination, "column_mapping": existing_mapping + appended}},
         }
+
+    def _get_input_columns(self) -> list[str]:
+        """Return column names for the first assigned input storage table.
+
+        Tries two sources in order:
+        1. `tables_input_mapping[0].columns` (no API call needed).
+        2. Storage API using the table source from the raw storage config
+           (fallback for sync actions where files are not mounted and the
+           UI-declared column list is empty).
+        """
+        try:
+            mappings = self.configuration.tables_input_mapping
+        except Exception:
+            mappings = []
+
+        if mappings and mappings[0].columns:
+            return list(mappings[0].columns)
+
+        raw_tables = self.configuration.config_data.get("storage", {}).get("input", {}).get("tables", [])
+        if not raw_tables:
+            return []
+        table_id = raw_tables[0].get("source")
+        if not table_id:
+            return []
+
+        token = self.environment_variables.token
+        url = self.environment_variables.url
+        if not token or not url:
+            return []
+
+        try:
+            resp = requests.get(
+                f"{url}/v2/storage/tables/{table_id}",
+                headers={"X-StorageApi-Token": token},
+                timeout=30,
+            )
+            resp.raise_for_status()
+        except (requests.HTTPError, requests.Timeout, requests.ConnectionError) as e:
+            logging.warning("Storage API lookup failed for %s: %s", table_id, e)
+            return []
+        return list(resp.json().get("columns", []))
 
     def _resolve_target_columns(self, raw_destination: dict) -> list[str]:
         write_mode = raw_destination.get("write_mode", "preset")

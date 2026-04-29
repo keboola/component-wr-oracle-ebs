@@ -128,10 +128,23 @@
             }
           }
         },
+        "reload_columns": {
+          "type": "button",
+          "format": "sync-action",
+          "title": "Load Columns",
+          "description": "Append the canonical target columns of the selected entity (preset) or table (custom) to the column mapping below. Source values are fuzzy-matched against the assigned input table's columns (exact, case-insensitive, then ignoring underscores/dashes/spaces). Append-only — existing rows are never modified or removed.",
+          "propertyOrder": 10,
+          "options": {
+            "async": {
+              "label": "Load Columns",
+              "action": "reloadColumns"
+            }
+          }
+        },
         "column_mapping": {
           "type": "array",
           "title": "Column Mapping",
-          "description": "Map input CSV columns to target Oracle columns. Only listed columns are written; unmapped input columns are dropped. Use 'Reload Target Columns' to pre-populate destination columns.",
+          "description": "Map input CSV columns to target Oracle columns. Only listed columns are written; unmapped input columns are dropped. Click 'Load Target Columns' above to pre-populate destination columns.",
           "format": "table",
           "uniqueItems": true,
           "propertyOrder": 9,
@@ -155,12 +168,6 @@
                 "title": "Target Column"
               }
             }
-          },
-          "options": {
-            "async": {
-              "label": "Reload Target Columns",
-              "action": "reloadColumns"
-            }
           }
         },
         "batch_size": {
@@ -168,7 +175,7 @@
           "title": "Batch Size",
           "description": "Number of rows per INSERT/MERGE batch (default 1000).",
           "default": 1000,
-          "propertyOrder": 10
+          "propertyOrder": 11
         },
         "submit_program": {
           "type": "boolean",
@@ -176,7 +183,7 @@
           "description": "After loading rows into the staging interface table, trigger the EBS concurrent program (e.g. Payables Open Interface Import) that imports them into the live tables. Only applies to interface-based presets.",
           "default": true,
           "format": "checkbox",
-          "propertyOrder": 11,
+          "propertyOrder": 12,
           "options": {
             "dependencies": {
               "destination.write_mode": "preset"
@@ -189,7 +196,7 @@
           "description": "Block until the submitted concurrent program finishes. If disabled, the component returns immediately after submission.",
           "default": true,
           "format": "checkbox",
-          "propertyOrder": 12,
+          "propertyOrder": 13,
           "options": {
             "dependencies": {
               "destination.write_mode": "preset",
@@ -202,7 +209,7 @@
           "title": "Poll Interval (seconds)",
           "description": "How often to check the concurrent program status while waiting.",
           "default": 10,
-          "propertyOrder": 13,
+          "propertyOrder": 14,
           "options": {
             "dependencies": {
               "destination.write_mode": "preset",
@@ -215,7 +222,7 @@
           "title": "Poll Timeout (seconds)",
           "description": "Max seconds to wait for the concurrent program to finish before giving up.",
           "default": 600,
-          "propertyOrder": 14,
+          "propertyOrder": 15,
           "options": {
             "dependencies": {
               "destination.write_mode": "preset",
