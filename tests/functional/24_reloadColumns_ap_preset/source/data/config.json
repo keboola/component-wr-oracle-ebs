@@ -1,5 +1,22 @@
 {
   "action": "reloadColumns",
+  "storage": {
+    "input": {
+      "tables": [
+        {
+          "source": "in.c-test.invoices",
+          "destination": "invoices.csv",
+          "columns": [
+            "INVOICE_NUM",
+            "Invoice Date",
+            "vendor-id",
+            "my_amount",
+            "extra_col"
+          ]
+        }
+      ]
+    }
+  },
   "parameters": {
     "connection": {
       "db_host": "34.140.37.168",

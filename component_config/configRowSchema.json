@@ -132,12 +132,12 @@
         "reload_columns": {
           "type": "button",
           "format": "sync-action",
-          "title": "Load Columns",
-          "description": "Append the canonical target columns of the selected entity (preset) or table (custom) to the column mapping below. Source values are fuzzy-matched against the assigned input table's columns (exact, case-insensitive, then ignoring underscores/dashes/spaces). Append-only — existing rows are never modified or removed.",
+          "title": "Load Mapping",
+          "description": "Populate the column mapping with one row per input table column. Each row's target column is fuzzy-matched against the canonical EBS columns of the selected entity (preset) or table (custom). Existing per-source destinations are preserved.",
           "propertyOrder": 10,
           "options": {
             "async": {
-              "label": "Load Columns",
+              "label": "Load Mapping",
               "action": "reloadColumns"
             }
           }
@@ -145,7 +145,7 @@
         "column_mapping": {
           "type": "array",
           "title": "Column Mapping",
-          "description": "Map input CSV columns to target Oracle columns. Only listed columns are written; unmapped input columns are dropped. Click 'Load Target Columns' above to pre-populate destination columns.",
+          "description": "Maps input CSV columns (left) to target Oracle EBS columns (right). Only mapped rows with a non-empty target are written; unmapped or blank-target rows are dropped. Click 'Load Mapping' above to pre-populate from the input table.",
           "format": "table",
           "uniqueItems": true,
           "propertyOrder": 9,
@@ -156,17 +156,28 @@
               "source": {
                 "type": "string",
                 "title": "Source Column",
-                "format": "select",
-                "enum": [],
                 "options": {
-                  "tags": true,
-                  "watch": {"columns": "_metadata_.table.columns"},
-                  "enumSource": "columns"
+                  "readOnly": true
                 }
               },
               "destination": {
                 "type": "string",
-                "title": "Target Column"
+                "title": "Target Column",
+                "format": "select",
+                "enum": [],
+                "watch": {
+                  "target_columns": "_metadata_.target_columns"
+                },
+                "enumSource": [
+                  {
+                    "source": "target_columns",
+                    "value": "{{item.value}}",
+                    "title": "{{item.label}}"
+                  }
+                ],
+                "options": {
+                  "tags": true
+                }
               }
             }
           }
@@ -239,12 +250,13 @@
         "hidden": true
       },
       "properties": {
-        "table": {
-          "type": "object",
-          "properties": {
-            "columns": {
-              "type": "array",
-              "items": {"type": "string"}
+        "target_columns": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "value": {"type": "string"},
+              "label": {"type": "string"}
             }
           }
         }

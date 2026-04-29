@@ -254,13 +254,16 @@ class Component(ComponentBase):
 
     @sync_action("reloadColumns")
     def reload_columns(self) -> dict:
-        """Append target Oracle columns to the column mapping with fuzzy-matched sources.
+        """Populate column mapping by iterating input columns and fuzzy-matching to EBS targets.
 
-        Append-only behaviour: every existing entry in `column_mapping` is preserved
-        verbatim. Only target columns that are not already present as a destination
-        get appended, with `source` fuzzy-matched against the assigned input table's
-        columns (exact → case-insensitive → normalized). Returns the full
-        `destination` object so the platform's shallow-merge wires it back in.
+        Mirrors the sage-intacct-writer pattern:
+
+        - One row per input table column (source on the left, read-only).
+        - Destination is a dropdown of the entity's canonical EBS columns
+          (provided to the form via `_metadata_.target_columns`).
+        - Existing destinations keyed by source column are preserved on reload.
+        - Source columns missing a destination get fuzzy-matched (exact →
+          case-insensitive → normalized) against the EBS column list.
         """
         # Read raw params — sync actions run with partial config and self.params
         # may fail validation if required preset fields aren't filled in yet.
@@ -272,25 +275,28 @@ class Component(ComponentBase):
                 "No target columns found. Pick a module/entity (preset) or target table (custom) first."
             )
 
-        existing_mapping = [m for m in raw_destination.get("column_mapping", []) if isinstance(m, dict)]
-        existing_destinations = {m.get("destination") for m in existing_mapping if m.get("destination")}
-
         input_columns = self._get_input_columns()
+        if not input_columns:
+            raise UserException("No input table columns found. Map an input table first.")
 
-        appended = [
-            {"source": self._fuzzy_match(col, input_columns), "destination": col}
-            for col in target_columns
-            if col not in existing_destinations
-        ]
+        existing_destination_by_source = {
+            m.get("source"): m.get("destination", "")
+            for m in raw_destination.get("column_mapping", [])
+            if isinstance(m, dict) and m.get("source")
+        }
 
-        # Return _metadata_.table.columns alongside destination so the source dropdown's
-        # watch (`_metadata_.table.columns`) keeps its enum source after the form re-renders
-        # post-merge — same pattern as sage-intacct's `_metadata_.api_fields`.
+        new_mapping = []
+        for col in input_columns:
+            destination = existing_destination_by_source.get(col) or self._fuzzy_match(col, target_columns)
+            new_mapping.append({"source": col, "destination": destination})
+
+        target_options = [{"value": c, "label": c} for c in target_columns]
+
         return {
             "type": "data",
             "data": {
-                "destination": {**raw_destination, "column_mapping": existing_mapping + appended},
-                "_metadata_": {"table": {"columns": input_columns}},
+                "destination": {**raw_destination, "column_mapping": new_mapping},
+                "_metadata_": {"target_columns": target_options},
             },
         }
 

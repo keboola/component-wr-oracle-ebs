@@ -1,5 +1,21 @@
 {
   "action": "reloadColumns",
+  "storage": {
+    "input": {
+      "tables": [
+        {
+          "source": "in.c-test.invoices",
+          "destination": "invoices.csv",
+          "columns": [
+            "my_inv_num",
+            "my_amount",
+            "INVOICE_TYPE_LOOKUP_CODE",
+            "extra_col"
+          ]
+        }
+      ]
+    }
+  },
   "parameters": {
     "connection": {
       "db_host": "34.140.37.168",
