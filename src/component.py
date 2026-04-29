@@ -283,9 +283,15 @@ class Component(ComponentBase):
             if col not in existing_destinations
         ]
 
+        # Return _metadata_.table.columns alongside destination so the source dropdown's
+        # watch (`_metadata_.table.columns`) keeps its enum source after the form re-renders
+        # post-merge — same pattern as sage-intacct's `_metadata_.api_fields`.
         return {
             "type": "data",
-            "data": {"destination": {**raw_destination, "column_mapping": existing_mapping + appended}},
+            "data": {
+                "destination": {**raw_destination, "column_mapping": existing_mapping + appended},
+                "_metadata_": {"table": {"columns": input_columns}},
+            },
         }
 
     def _get_input_columns(self) -> list[str]:

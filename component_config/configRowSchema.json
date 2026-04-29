@@ -21,6 +21,7 @@
           "title": "EBS Module",
           "enum": ["ap", "ar", "gl", "po", "inv", "tca"],
           "propertyOrder": 2,
+          "default":"ap",
           "options": {
             "enum_titles": [
               "Accounts Payable (AP)",
@@ -227,6 +228,23 @@
             "dependencies": {
               "destination.write_mode": "preset",
               "destination.submit_program": true
+            }
+          }
+        }
+      }
+    },
+    "_metadata_": {
+      "type": "object",
+      "options": {
+        "hidden": true
+      },
+      "properties": {
+        "table": {
+          "type": "object",
+          "properties": {
+            "columns": {
+              "type": "array",
+              "items": {"type": "string"}
             }
           }
         }
