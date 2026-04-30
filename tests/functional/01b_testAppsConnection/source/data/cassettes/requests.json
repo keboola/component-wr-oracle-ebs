@@ -1,0 +1,11 @@
+{
+  "_metadata": {"db_driver": "oracledb", "freeze_time": null, "keboola_db_vcr_version": "0.5.0", "keboola_vcr_version": "0.5.0", "recorded_at": "2026-04-28T14:18:11.805339+00:00"},
+  "interactions": [
+
+  ],
+  "db_interactions": [
+    {"sql_normalized": "ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'", "params_hash": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b", "description": null, "rows": []},
+    {"sql_normalized": "SELECT BANNER FROM V$VERSION WHERE ROWNUM = 1", "params_hash": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b", "description": [["BANNER", "<DbType DB_TYPE_VARCHAR>"]], "rows": [["Oracle Database 19c Enterprise Edition Release 19.0.0.0.0 - Production"]]}
+  ],
+  "version": 1
+}

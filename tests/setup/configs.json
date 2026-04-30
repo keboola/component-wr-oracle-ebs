@@ -1,0 +1,649 @@
+[
+  {
+    "name": "01_testConnection",
+    "description": "Sync action: test database and REST API connection",
+    "config": {
+      "action": "testConnection",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "rest_url": "http://34.140.37.168:8000/webservices/rest",
+        "rest_user": "PLACEHOLDER",
+        "#rest_password": "PLACEHOLDER"
+      }
+    }
+  },
+  {
+    "name": "01b_testAppsConnection",
+    "description": "Sync action: test APPS-equivalent user used for concurrent program submission",
+    "config": {
+      "action": "testAppsConnection",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "apps_user": "APPS",
+        "#apps_password": "PLACEHOLDER"
+      }
+    }
+  },
+  {
+    "name": "02_listModules",
+    "description": "Sync action: list available EBS writer modules",
+    "config": {
+      "action": "listModules",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        }
+      }
+    }
+  },
+  {
+    "name": "03_listOperatingUnits",
+    "description": "Sync action: list operating units from EBS",
+    "config": {
+      "action": "listOperatingUnits",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        }
+      }
+    }
+  },
+  {
+    "name": "04_listLedgers",
+    "description": "Sync action: list GL ledgers from EBS",
+    "config": {
+      "action": "listLedgers",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        }
+      }
+    }
+  },
+  {
+    "name": "05_listEntities_ap",
+    "description": "Sync action: list AP module write targets",
+    "config": {
+      "action": "listEntities",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "module": "ap"
+        }
+      }
+    }
+  },
+  {
+    "name": "06_listEntities_tca",
+    "description": "Sync action: list TCA module write targets (REST-based)",
+    "config": {
+      "action": "listEntities",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "module": "tca"
+        }
+      }
+    }
+  },
+  {
+    "name": "07_listTargetColumns_ap_invoices",
+    "description": "Sync action: list AP_INVOICES_INTERFACE table columns",
+    "config": {
+      "action": "listTargetColumns",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "preset",
+          "module": "ap",
+          "entity": "ap_invoices_interface"
+        }
+      }
+    }
+  },
+{
+    "name": "10_write_ap_invoices_interface_no_submit",
+    "description": "Interface table write: AP invoices INSERT only (skip concurrent program)",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "preset",
+          "module": "ap",
+          "entity": "ap_invoices_interface",
+          "org_id": 204,
+          "write_operation": "insert",
+          "submit_program": false,
+          "batch_size": 10
+        }
+      },
+      "storage": {
+        "input": {
+          "tables": [
+            {
+              "source": "in.c-test.ap_invoices",
+              "destination": "ap_invoices.csv"
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "11_write_po_headers_interface_no_submit",
+    "description": "Interface table write: PO headers INSERT only (skip concurrent program)",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "preset",
+          "module": "po",
+          "entity": "po_headers_interface",
+          "org_id": 204,
+          "write_operation": "insert",
+          "submit_program": false,
+          "batch_size": 10
+        }
+      },
+      "storage": {
+        "input": {
+          "tables": [
+            {
+              "source": "in.c-test.po_headers",
+              "destination": "po_headers.csv"
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "12_error_unknown_preset",
+    "description": "Error: unknown module/entity combination should fail (exit 1)",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "preset",
+          "module": "ap",
+          "entity": "nonexistent_entity"
+        }
+      },
+      "storage": {
+        "input": {
+          "tables": [
+            {
+              "source": "in.c-test.dummy",
+              "destination": "dummy.csv"
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "13_error_missing_module",
+    "description": "Error: preset with empty module should fail (exit 1)",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "preset",
+          "module": "",
+          "entity": ""
+        }
+      },
+      "storage": {
+        "input": {
+          "tables": [
+            {
+              "source": "in.c-test.dummy",
+              "destination": "dummy.csv"
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "14_listEntities_gl",
+    "description": "Sync action: list GL module write targets (static — no DB needed)",
+    "config": {
+      "action": "listEntities",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "module": "gl"
+        }
+      }
+    }
+  },
+  {
+    "name": "15_error_listEntities_missing_module",
+    "description": "Error: listEntities without selecting a module should fail (exit 1)",
+    "config": {
+      "action": "listEntities",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {}
+      }
+    }
+  },
+  {
+    "name": "16_listTargetColumns_tca_preset",
+    "description": "Sync action: listTargetColumns for TCA REST preset returns metadata columns (no DB query)",
+    "config": {
+      "action": "listTargetColumns",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "preset",
+          "module": "tca",
+          "entity": "hz_create_organization"
+        }
+      }
+    }
+  },
+  {
+    "name": "17_write_ap_invoice_lines_no_submit",
+    "description": "Interface table write: AP invoice lines INSERT only (linked to invoice IDs)",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "preset",
+          "module": "ap",
+          "entity": "ap_invoice_lines_interface",
+          "org_id": 204,
+          "write_operation": "insert",
+          "submit_program": false,
+          "batch_size": 10
+        }
+      },
+      "storage": {
+        "input": {
+          "tables": [
+            {
+              "source": "in.c-test.ap_invoice_lines",
+              "destination": "ap_invoice_lines.csv"
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "18_write_ap_invoices_column_mapping",
+    "description": "Interface table write: AP invoices with column_mapping to rename input columns",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "preset",
+          "module": "ap",
+          "entity": "ap_invoices_interface",
+          "org_id": 204,
+          "write_operation": "insert",
+          "submit_program": false,
+          "batch_size": 10,
+          "column_mapping": [
+            {"source": "my_inv_num", "destination": "INVOICE_NUM"},
+            {"source": "my_inv_date", "destination": "INVOICE_DATE"},
+            {"source": "my_vendor_id", "destination": "VENDOR_ID"},
+            {"source": "my_amount", "destination": "INVOICE_AMOUNT"},
+            {"source": "my_currency", "destination": "INVOICE_CURRENCY_CODE"},
+            {"source": "my_description", "destination": "DESCRIPTION"}
+          ]
+        }
+      },
+      "storage": {
+        "input": {
+          "tables": [
+            {
+              "source": "in.c-test.ap_invoices_mapped",
+              "destination": "ap_invoices_mapped.csv"
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "19_write_inv_transactions_no_submit",
+    "description": "Interface table write: INV transactions INSERT only",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "preset",
+          "module": "inv",
+          "entity": "mtl_transactions_interface",
+          "org_id": 204,
+          "write_operation": "insert",
+          "submit_program": false,
+          "batch_size": 10
+        }
+      },
+      "storage": {
+        "input": {
+          "tables": [
+            {
+              "source": "in.c-test.inv_transactions",
+              "destination": "inv_transactions.csv"
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "20_write_ap_invoices_upsert",
+    "description": "Interface table write: AP invoices MERGE (upsert) by INVOICE_ID — overwrites existing rows",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "preset",
+          "module": "ap",
+          "entity": "ap_invoices_interface",
+          "org_id": 204,
+          "write_operation": "upsert",
+          "primary_key": ["INVOICE_ID"],
+          "submit_program": false,
+          "batch_size": 10
+        }
+      },
+      "storage": {
+        "input": {
+          "tables": [
+            {
+              "source": "in.c-test.ap_invoices_upsert",
+              "destination": "ap_invoices_upsert.csv"
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "21_error_upsert_missing_pk",
+    "description": "Error: upsert write_operation without primary_key should fail (exit 1)",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "preset",
+          "module": "ap",
+          "entity": "ap_invoices_interface",
+          "write_operation": "upsert",
+          "primary_key": []
+        }
+      },
+      "storage": {
+        "input": {
+          "tables": [
+            {
+              "source": "in.c-test.dummy",
+              "destination": "dummy.csv"
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "22_error_ap_missing_required_column",
+    "description": "Error: AP invoices without VENDOR_ID (required column) should fail (exit 1)",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "preset",
+          "module": "ap",
+          "entity": "ap_invoices_interface",
+          "org_id": 204,
+          "write_operation": "insert",
+          "submit_program": false
+        }
+      },
+      "storage": {
+        "input": {
+          "tables": [
+            {
+              "source": "in.c-test.ap_invoices_missing_vendor",
+              "destination": "ap_invoices_missing_vendor.csv"
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "24_reloadColumns_ap_preset",
+    "description": "Sync action: reloadColumns pre-populates column_mapping with AP invoices target columns (preset mode, no DB needed)",
+    "config": {
+      "action": "reloadColumns",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "preset",
+          "module": "ap",
+          "entity": "ap_invoices_interface",
+          "org_id": 204
+        }
+      }
+    }
+  },
+  {
+    "name": "25_reloadColumns_preserves_existing_sources",
+    "description": "Sync action: reloadColumns keeps existing source assignments on reload",
+    "config": {
+      "action": "reloadColumns",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "preset",
+          "module": "ap",
+          "entity": "ap_invoices_interface",
+          "org_id": 204,
+          "column_mapping": [
+            {"source": "my_inv_num", "destination": "INVOICE_NUM"},
+            {"source": "my_amount", "destination": "INVOICE_AMOUNT"}
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "26_error_reloadColumns_missing_module",
+    "description": "Error: reloadColumns without module/entity should fail (exit 1)",
+    "config": {
+      "action": "reloadColumns",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "preset"
+        }
+      }
+    }
+  },
+  {
+    "name": "23_error_custom_mode_no_table",
+    "description": "Error: custom write mode without target_table should fail (exit 1)",
+    "config": {
+      "action": "run",
+      "parameters": {
+        "connection": {
+          "db_host": "34.140.37.168",
+          "db_port": 1521,
+          "db_service_name": "ebs_EBSDB",
+          "db_user": "PLACEHOLDER",
+          "#db_password": "PLACEHOLDER"
+        },
+        "destination": {
+          "write_mode": "custom",
+          "target_table": "",
+          "write_operation": "insert"
+        }
+      },
+      "storage": {
+        "input": {
+          "tables": [
+            {
+              "source": "in.c-test.dummy",
+              "destination": "dummy.csv"
+            }
+          ]
+        }
+      }
+    }
+  }
+]

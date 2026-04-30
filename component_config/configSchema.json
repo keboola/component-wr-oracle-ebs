@@ -1,19 +1,217 @@
 {
   "type": "object",
-  "title": "extractor configuration",
-  "required": [
-    "print_hello"
-  ],
+  "title": "Oracle EBS Writer — Connection Settings",
   "properties": {
-    "print_hello": {
-      "type": "boolean",
-      "title": "Print Hello",
-      "propertyOrder": 1
+    "connection": {
+      "type": "object",
+      "title": "Database Connection",
+      "format": "grid-strict",
+      "propertyOrder": 1,
+      "required": ["db_host", "db_service_name", "db_user", "#db_password"],
+      "properties": {
+        "db_host": {
+          "type": "string",
+          "title": "Database Host",
+          "description": "Hostname or IP address of the Oracle database server",
+          "propertyOrder": 1,
+          "options": {
+            "grid_columns": 8
+          }
+        },
+        "db_port": {
+          "type": "integer",
+          "title": "Port",
+          "default": 1521,
+          "propertyOrder": 2,
+          "options": {
+            "grid_columns": 2
+          }
+        },
+        "test_connection": {
+          "type": "button",
+          "format": "test-connection",
+          "propertyOrder": 3,
+          "options": {
+            "grid_columns": 2
+          }
+        },
+        "db_service_name": {
+          "type": "string",
+          "title": "Service Name",
+          "description": "Oracle service name (e.g. ebs_EBSDB)",
+          "propertyOrder": 4,
+          "options": {
+            "grid_columns": 12
+          }
+        },
+        "db_user": {
+          "type": "string",
+          "title": "DB Username",
+          "description": "Database user with write access to EBS interface tables",
+          "propertyOrder": 5,
+          "options": {
+            "grid_columns": 6
+          }
+        },
+        "#db_password": {
+          "type": "string",
+          "title": "DB Password",
+          "format": "password",
+          "propertyOrder": 6,
+          "options": {
+            "grid_columns": 6
+          }
+        }
+      }
     },
-    "debug": {
-      "type": "boolean",
-      "title": "Debug",
-      "propertyOrder": 2
+    "rest_connection": {
+      "type": "object",
+      "title": "REST Connection",
+      "format": "grid-strict",
+      "propertyOrder": 2,
+      "properties": {
+        "enable_rest": {
+          "type": "boolean",
+          "title": "Enable REST API",
+          "description": "Required only for TCA party and AR invoice writes. Interface-table writes (AP, PO, GL, INV, OM) work without it.",
+          "format": "checkbox",
+          "default": false,
+          "propertyOrder": 1,
+          "options": {
+            "grid_columns": 12
+          }
+        },
+        "rest_url": {
+          "type": "string",
+          "title": "EBS REST API URL",
+          "description": "ISG REST API base URL (e.g. http://host:8000/webservices/rest). Required for TCA and AR writes.",
+          "propertyOrder": 2,
+          "options": {
+            "grid_columns": 6,
+            "dependencies": {
+              "rest_connection.enable_rest": true
+            }
+          }
+        },
+        "rest_user": {
+          "type": "string",
+          "title": "REST API Username",
+          "description": "EBS REST API user (typically SYSADMIN)",
+          "propertyOrder": 3,
+          "options": {
+            "grid_columns": 6,
+            "dependencies": {
+              "rest_connection.enable_rest": true
+            }
+          }
+        },
+        "#rest_password": {
+          "type": "string",
+          "title": "REST API Password",
+          "format": "password",
+          "propertyOrder": 4,
+          "options": {
+            "grid_columns": 6,
+            "dependencies": {
+              "rest_connection.enable_rest": true
+            }
+          }
+        },
+        "default_org_id": {
+          "type": "integer",
+          "title": "Org ID",
+          "description": "Operating unit ID for REST API calls (e.g. 204 = Vision Operations)",
+          "default": 204,
+          "propertyOrder": 5,
+          "options": {
+            "grid_columns": 6,
+            "dependencies": {
+              "rest_connection.enable_rest": true
+            }
+          }
+        },
+        "test_rest_connection": {
+          "type": "button",
+          "title": "Test REST Connection",
+          "format": "sync-action",
+          "propertyOrder": 6,
+          "options": {
+            "grid_columns": 12,
+            "async": {
+              "label": "Test REST Connection",
+              "action": "testRestConnection"
+            },
+            "dependencies": {
+              "rest_connection.enable_rest": true
+            }
+          }
+        }
+      }
+    },
+    "apps_connection": {
+      "type": "object",
+      "title": "APPS-Equivalent User (for Concurrent Programs)",
+      "format": "grid-strict",
+      "propertyOrder": 3,
+      "properties": {
+        "enable_apps_user": {
+          "type": "boolean",
+          "title": "Use Dedicated APPS-Equivalent User for Concurrent Programs",
+          "description": "Required if 'DB Username' is not APPS and lacks the grants from Oracle Support Note 822225.1. The component opens a separate connection with these credentials only when submitting concurrent programs (FND_GLOBAL.APPS_INITIALIZE + FND_REQUEST.SUBMIT_REQUEST). Bulk INSERTs always run as the regular DB user.",
+          "format": "checkbox",
+          "default": false,
+          "propertyOrder": 1,
+          "options": {
+            "grid_columns": 12
+          }
+        },
+        "apps_user": {
+          "type": "string",
+          "title": "APPS Username",
+          "description": "Database user with APPS-equivalent grants (typically APPS). Used only to submit concurrent programs.",
+          "propertyOrder": 2,
+          "options": {
+            "grid_columns": 6,
+            "dependencies": {
+              "apps_connection.enable_apps_user": true
+            }
+          }
+        },
+        "#apps_password": {
+          "type": "string",
+          "title": "APPS Password",
+          "format": "password",
+          "propertyOrder": 3,
+          "options": {
+            "grid_columns": 6,
+            "dependencies": {
+              "apps_connection.enable_apps_user": true
+            }
+          }
+        },
+        "test_apps_connection": {
+          "type": "button",
+          "title": "Test APPS Connection",
+          "format": "sync-action",
+          "propertyOrder": 4,
+          "options": {
+            "grid_columns": 12,
+            "async": {
+              "label": "Test APPS Connection",
+              "action": "testAppsConnection"
+            },
+            "dependencies": {
+              "apps_connection.enable_apps_user": true
+            }
+          }
+        }
+      }
+    },
+    "ssh_options": {
+      "type": "object",
+      "title": "SSH Tunnel",
+      "format": "ssh-editor",
+      "propertyOrder": 5
     }
   }
 }

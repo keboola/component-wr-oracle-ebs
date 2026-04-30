@@ -1,0 +1,34 @@
+{
+  "action": "run",
+  "parameters": {
+    "connection": {
+      "db_host": "34.140.37.168",
+      "db_port": 1521,
+      "db_service_name": "ebs_EBSDB",
+      "db_user": "PLACEHOLDER",
+      "#db_password": "PLACEHOLDER"
+    },
+    "destination": {
+      "write_mode": "preset",
+      "module": "ap",
+      "entity": "ap_invoices_interface",
+      "org_id": 204,
+      "write_operation": "upsert",
+      "primary_key": [
+        "INVOICE_ID"
+      ],
+      "submit_program": false,
+      "batch_size": 10
+    }
+  },
+  "storage": {
+    "input": {
+      "tables": [
+        {
+          "source": "in.c-test.ap_invoices_upsert",
+          "destination": "ap_invoices_upsert.csv"
+        }
+      ]
+    }
+  }
+}

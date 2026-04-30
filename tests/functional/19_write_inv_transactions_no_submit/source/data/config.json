@@ -1,0 +1,31 @@
+{
+  "action": "run",
+  "parameters": {
+    "connection": {
+      "db_host": "34.140.37.168",
+      "db_port": 1521,
+      "db_service_name": "ebs_EBSDB",
+      "db_user": "PLACEHOLDER",
+      "#db_password": "PLACEHOLDER"
+    },
+    "destination": {
+      "write_mode": "preset",
+      "module": "inv",
+      "entity": "mtl_transactions_interface",
+      "org_id": 204,
+      "write_operation": "insert",
+      "submit_program": false,
+      "batch_size": 10
+    }
+  },
+  "storage": {
+    "input": {
+      "tables": [
+        {
+          "source": "in.c-test.inv_transactions",
+          "destination": "inv_transactions.csv"
+        }
+      ]
+    }
+  }
+}

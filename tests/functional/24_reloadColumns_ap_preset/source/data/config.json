@@ -1,0 +1,35 @@
+{
+  "action": "reloadColumns",
+  "storage": {
+    "input": {
+      "tables": [
+        {
+          "source": "in.c-test.invoices",
+          "destination": "invoices.csv",
+          "columns": [
+            "INVOICE_NUM",
+            "Invoice Date",
+            "vendor-id",
+            "my_amount",
+            "extra_col"
+          ]
+        }
+      ]
+    }
+  },
+  "parameters": {
+    "connection": {
+      "db_host": "34.140.37.168",
+      "db_port": 1521,
+      "db_service_name": "ebs_EBSDB",
+      "db_user": "PLACEHOLDER",
+      "#db_password": "PLACEHOLDER"
+    },
+    "destination": {
+      "write_mode": "preset",
+      "module": "ap",
+      "entity": "ap_invoices_interface",
+      "org_id": 204
+    }
+  }
+}

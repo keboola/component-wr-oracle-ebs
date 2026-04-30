@@ -1,0 +1,24 @@
+{
+  "exit_code": 1,
+  "stderr": "Missing required columns for AP Invoices Interface: VENDOR_ID. Provide them in the input table or via column mapping.\nTraceback (most recent call last):\n  File \"src/component.py\", line 555, in <module>\n    comp.execute_action()\n    ~~~~~~~~~~~~~~~~~~~^^\n  File \"/Users/matyasjirat/VSCodeProjects/Keboola/component-wr-oracle-ebs/.venv/lib/python3.13/site-packages/keboola/component/base.py\", line 251, in execute_action\n    return self._do_execute_action()\n           ~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"/Users/matyasjirat/VSCodeProjects/Keboola/component-wr-oracle-ebs/.venv/lib/python3.13/site-packages/keboola/component/base.py\", line 265, in _do_execute_action\n    return action_method()\n  File \"src/component.py\", line 147, in run\n    self._write_preset(rows)\n    ~~~~~~~~~~~~~~~~~~^^^^^^\n  File \"src/component.py\", line 290, in _write_preset\n    self._write_interface_table(preset, rows)\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^\n  File \"src/component.py\", line 365, in _write_interface_table\n    raise UserException(\n    ...<2 lines>...\n    )\nkeboola.component.exceptions.UserException: Missing required columns for AP Invoices Interface: VENDOR_ID. Provide them in the input table or via column mapping.\n",
+  "logs": [
+    {
+      "level": "INFO",
+      "logger": "root",
+      "message": "Reading input table: ap_invoices_missing_vendor.csv",
+      "timestamp": "2026-04-28T14:18:16.770Z"
+    },
+    {
+      "level": "INFO",
+      "logger": "root",
+      "message": "Read 1 rows with 5 columns from input",
+      "timestamp": "2026-04-28T14:18:16.770Z"
+    },
+    {
+      "level": "ERROR",
+      "logger": "root",
+      "message": "Missing required columns for AP Invoices Interface: VENDOR_ID. Provide them in the input table or via column mapping.\nTraceback (most recent call last):\n  File \"src/component.py\", line 555, in <module>\n    comp.execute_action()\n    ~~~~~~~~~~~~~~~~~~~^^\n  File \"/Users/matyasjirat/VSCodeProjects/Keboola/component-wr-oracle-ebs/.venv/lib/python3.13/site-packages/keboola/component/base.py\", line 251, in execute_action\n    return self._do_execute_action()\n           ~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"/Users/matyasjirat/VSCodeProjects/Keboola/component-wr-oracle-ebs/.venv/lib/python3.13/site-packages/keboola/component/base.py\", line 265, in _do_execute_action\n    return action_method()\n  File \"src/component.py\", line 147, in run\n    self._write_preset(rows)\n    ~~~~~~~~~~~~~~~~~~^^^^^^\n  File \"src/component.py\", line 290, in _write_preset\n    self._write_interface_table(preset, rows)\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^\n  File \"src/component.py\", line 365, in _write_interface_table\n    raise UserException(\n    ...<2 lines>...\n    )\nkeboola.component.exceptions.UserException: Missing required columns for AP Invoices Interface: VENDOR_ID. Provide them in the input table or via column mapping.",
+      "timestamp": "2026-04-28T14:18:17.078Z"
+    }
+  ]
+}

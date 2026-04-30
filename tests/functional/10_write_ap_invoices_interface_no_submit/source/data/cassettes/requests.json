@@ -1,0 +1,15 @@
+{
+  "_metadata": {"db_driver": "oracledb", "freeze_time": null, "keboola_db_vcr_version": "0.5.0", "keboola_vcr_version": "0.5.0", "recorded_at": "2026-04-28T14:18:13.349026+00:00"},
+  "interactions": [
+
+  ],
+  "db_interactions": [
+    {"sql_normalized": "ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'", "params_hash": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b", "description": null, "rows": []},
+    {"sql_normalized": "SELECT APPS.AP_INVOICES_INTERFACE_S.NEXTVAL AS NEXTVAL FROM DUAL", "params_hash": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a", "description": [["NEXTVAL", "<DbType DB_TYPE_NUMBER>"]], "rows": [[5173490]]},
+    {"sql_normalized": "SELECT APPS.AP_INVOICES_INTERFACE_S.NEXTVAL AS NEXTVAL FROM DUAL", "params_hash": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a", "description": [["NEXTVAL", "<DbType DB_TYPE_NUMBER>"]], "rows": [[5173491]]},
+    {"sql_normalized": "ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'", "params_hash": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b", "description": null, "rows": []},
+    {"sql_normalized": "INSERT INTO APPS.AP_INVOICES_INTERFACE (DESCRIPTION, GROUP_ID, INVOICE_AMOUNT, INVOICE_CURRENCY_CODE, INVOICE_DATE, INVOICE_ID, INVOICE_NUM, ORG_ID, SOURCE, VENDOR_ID) VALUES (:DESCRIPTION, :GROUP_ID, :INVOICE_AMOUNT, :INVOICE_CURRENCY_CODE, :INVOICE_DATE, :INVOICE_ID, :INVOICE_NUM, :ORG_ID, :SOURCE, :VENDOR_ID)", "params_hash": "99afd1e422c39ee92727fb2c034e93bc2ad88340a4bfecf8fd61e077048e9c25", "description": null, "rows": []},
+    {"sql_normalized": "INSERT INTO APPS.AP_INVOICES_INTERFACE (DESCRIPTION, GROUP_ID, INVOICE_AMOUNT, INVOICE_CURRENCY_CODE, INVOICE_DATE, INVOICE_ID, INVOICE_NUM, ORG_ID, SOURCE, VENDOR_ID) VALUES (:DESCRIPTION, :GROUP_ID, :INVOICE_AMOUNT, :INVOICE_CURRENCY_CODE, :INVOICE_DATE, :INVOICE_ID, :INVOICE_NUM, :ORG_ID, :SOURCE, :VENDOR_ID)", "params_hash": "d8fe0c10f234d82174a1ac5f97bbff26885de2207fc1917359f7ad517035ffb5", "description": null, "rows": []}
+  ],
+  "version": 1
+}

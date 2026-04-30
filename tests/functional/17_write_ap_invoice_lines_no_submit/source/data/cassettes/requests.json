@@ -1,0 +1,15 @@
+{
+  "_metadata": {"db_driver": "oracledb", "freeze_time": null, "keboola_db_vcr_version": "0.5.0", "keboola_vcr_version": "0.5.0", "recorded_at": "2026-04-28T14:18:14.872509+00:00"},
+  "interactions": [
+
+  ],
+  "db_interactions": [
+    {"sql_normalized": "ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'", "params_hash": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b", "description": null, "rows": []},
+    {"sql_normalized": "SELECT APPS.AP_INVOICE_LINES_INTERFACE_S.NEXTVAL AS NEXTVAL FROM DUAL", "params_hash": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a", "description": [["NEXTVAL", "<DbType DB_TYPE_NUMBER>"]], "rows": [[6183499]]},
+    {"sql_normalized": "SELECT APPS.AP_INVOICE_LINES_INTERFACE_S.NEXTVAL AS NEXTVAL FROM DUAL", "params_hash": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a", "description": [["NEXTVAL", "<DbType DB_TYPE_NUMBER>"]], "rows": [[6183500]]},
+    {"sql_normalized": "ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'", "params_hash": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b", "description": null, "rows": []},
+    {"sql_normalized": "INSERT INTO APPS.AP_INVOICE_LINES_INTERFACE (AMOUNT, DESCRIPTION, INVOICE_ID, INVOICE_LINE_ID, LINE_NUMBER, LINE_TYPE_LOOKUP_CODE, ORG_ID) VALUES (:AMOUNT, :DESCRIPTION, :INVOICE_ID, :INVOICE_LINE_ID, :LINE_NUMBER, :LINE_TYPE_LOOKUP_CODE, :ORG_ID)", "params_hash": "3eca6279acadb41c7e045252f7fe785b2d6c1ef2ec2a501be1f5b4debf985c5e", "description": null, "rows": []},
+    {"sql_normalized": "INSERT INTO APPS.AP_INVOICE_LINES_INTERFACE (AMOUNT, DESCRIPTION, INVOICE_ID, INVOICE_LINE_ID, LINE_NUMBER, LINE_TYPE_LOOKUP_CODE, ORG_ID) VALUES (:AMOUNT, :DESCRIPTION, :INVOICE_ID, :INVOICE_LINE_ID, :LINE_NUMBER, :LINE_TYPE_LOOKUP_CODE, :ORG_ID)", "params_hash": "2a9aee9e026e1479e1f3cd09b55f039f52a0d2b60f0d8f36f28e25a7bc6b8483", "description": null, "rows": []}
+  ],
+  "version": 1
+}

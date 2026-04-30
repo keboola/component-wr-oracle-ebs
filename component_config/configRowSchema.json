@@ -1,1 +1,266 @@
-{}
+{
+  "type": "object",
+  "title": "Write Row",
+  "required": ["destination"],
+  "properties": {
+    "destination": {
+      "type": "object",
+      "title": "Destination",
+      "format": "collapse",
+      "propertyOrder": 1,
+      "properties": {
+        "write_mode": {
+          "type": "string",
+          "title": "Write Mode",
+          "enum": ["preset", "custom"],
+          "default": "preset",
+          "propertyOrder": 1
+        },
+        "module": {
+          "type": "string",
+          "title": "EBS Module",
+          "enum": ["ap", "ar", "gl", "po", "inv", "tca"],
+          "propertyOrder": 2,
+          "default":"ap",
+          "options": {
+            "enum_titles": [
+              "Accounts Payable (AP)",
+              "Accounts Receivable (AR)",
+              "General Ledger (GL)",
+              "Purchasing (PO)",
+              "Inventory (INV)",
+              "Trading Community (TCA)"
+            ],
+            "dependencies": {
+              "destination.write_mode": "preset"
+            }
+          }
+        },
+        "entity": {
+          "type": "string",
+          "title": "Target Entity (Interface Table)",
+          "format": "select",
+          "enum": [],
+          "propertyOrder": 3,
+          "options": {
+            "async": {
+              "label": "Load Entities",
+              "action": "listEntities",
+              "creatable": true
+            },
+            "dependencies": {
+              "destination.write_mode": "preset"
+            }
+          }
+        },
+        "org_id": {
+          "type": "integer",
+          "title": "Operating Unit (Org ID)",
+          "format": "select",
+          "enum": [],
+          "propertyOrder": 4,
+          "options": {
+            "async": {
+              "label": "Load Operating Units",
+              "action": "listOperatingUnits",
+              "creatable": true
+            },
+            "dependencies": {
+              "destination.write_mode": "preset"
+            }
+          }
+        },
+        "ledger_id": {
+          "type": "string",
+          "title": "Ledger",
+          "format": "select",
+          "enum": [],
+          "propertyOrder": 5,
+          "options": {
+            "async": {
+              "label": "Load Ledgers",
+              "action": "listLedgers",
+              "creatable": true
+            },
+            "dependencies": {
+              "destination.write_mode": "preset",
+              "destination.module": "gl"
+            }
+          }
+        },
+        "target_table": {
+          "type": "string",
+          "title": "Target Table",
+          "description": "Full Oracle table name (e.g. APPS.MY_CUSTOM_TABLE)",
+          "propertyOrder": 6,
+          "options": {
+            "dependencies": {
+              "destination.write_mode": "custom"
+            }
+          }
+        },
+        "write_operation": {
+          "type": "string",
+          "title": "Write Operation",
+          "enum": ["insert", "upsert"],
+          "default": "insert",
+          "description": "INSERT adds all rows. UPSERT updates existing rows by primary key and inserts new ones.",
+          "propertyOrder": 7
+        },
+        "primary_key": {
+          "type": "array",
+          "title": "Primary Key Columns",
+          "description": "Required for upsert. Used to match existing rows in the target table.",
+          "format": "select",
+          "items": {
+            "type": "string",
+            "enum": []
+          },
+          "uniqueItems": true,
+          "propertyOrder": 8,
+          "options": {
+            "tags": true,
+            "async": {
+              "label": "Load Target Columns",
+              "action": "listTargetColumns"
+            },
+            "dependencies": {
+              "destination.write_operation": "upsert"
+            }
+          }
+        },
+        "reload_columns": {
+          "type": "button",
+          "format": "sync-action",
+          "title": "Load Mapping",
+          "description": "Populate the column mapping with one row per input table column. Each row's target column is fuzzy-matched against the canonical EBS columns of the selected entity (preset) or table (custom). Existing per-source destinations are preserved.",
+          "propertyOrder": 10,
+          "options": {
+            "async": {
+              "label": "Load Mapping",
+              "action": "reloadColumns"
+            }
+          }
+        },
+        "column_mapping": {
+          "type": "array",
+          "title": "Column Mapping",
+          "description": "Maps input CSV columns (left) to target Oracle EBS columns (right). Only mapped rows with a non-empty target are written; unmapped or blank-target rows are dropped. Click 'Load Mapping' above to pre-populate from the input table.",
+          "format": "table",
+          "uniqueItems": true,
+          "propertyOrder": 9,
+          "items": {
+            "type": "object",
+            "required": ["source", "destination"],
+            "properties": {
+              "source": {
+                "type": "string",
+                "title": "Source Column",
+                "options": {
+                  "readOnly": true
+                }
+              },
+              "destination": {
+                "type": "string",
+                "title": "Target Column",
+                "format": "select",
+                "enum": [],
+                "watch": {
+                  "target_columns": "_metadata_.target_columns"
+                },
+                "enumSource": [
+                  {
+                    "source": "target_columns",
+                    "value": "{{item.value}}",
+                    "title": "{{item.label}}"
+                  }
+                ],
+                "options": {
+                  "tags": true
+                }
+              }
+            }
+          }
+        },
+        "batch_size": {
+          "type": "integer",
+          "title": "Batch Size",
+          "description": "Number of rows per INSERT/MERGE batch (default 1000).",
+          "default": 1000,
+          "propertyOrder": 11
+        },
+        "submit_program": {
+          "type": "boolean",
+          "title": "Submit Concurrent Program",
+          "description": "After loading rows into the staging interface table, trigger the EBS concurrent program (e.g. Payables Open Interface Import) that imports them into the live tables. Only applies to interface-based presets.",
+          "default": true,
+          "format": "checkbox",
+          "propertyOrder": 12,
+          "options": {
+            "dependencies": {
+              "destination.write_mode": "preset"
+            }
+          }
+        },
+        "wait_for_completion": {
+          "type": "boolean",
+          "title": "Wait for Completion",
+          "description": "Block until the submitted concurrent program finishes. If disabled, the component returns immediately after submission.",
+          "default": true,
+          "format": "checkbox",
+          "propertyOrder": 13,
+          "options": {
+            "dependencies": {
+              "destination.write_mode": "preset",
+              "destination.submit_program": true
+            }
+          }
+        },
+        "poll_interval": {
+          "type": "integer",
+          "title": "Poll Interval (seconds)",
+          "description": "How often to check the concurrent program status while waiting.",
+          "default": 10,
+          "propertyOrder": 14,
+          "options": {
+            "dependencies": {
+              "destination.write_mode": "preset",
+              "destination.submit_program": true
+            }
+          }
+        },
+        "poll_timeout": {
+          "type": "integer",
+          "title": "Poll Timeout (seconds)",
+          "description": "Max seconds to wait for the concurrent program to finish before giving up.",
+          "default": 600,
+          "propertyOrder": 15,
+          "options": {
+            "dependencies": {
+              "destination.write_mode": "preset",
+              "destination.submit_program": true
+            }
+          }
+        }
+      }
+    },
+    "_metadata_": {
+      "type": "object",
+      "options": {
+        "hidden": true
+      },
+      "properties": {
+        "target_columns": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "value": {"type": "string"},
+              "label": {"type": "string"}
+            }
+          }
+        }
+      }
+    }
+  }
+}

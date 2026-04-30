@@ -16,4 +16,6 @@ venv
 # vcr datadirtesting
 secrets.json
 tests/functional/*/source/data/out/
-tests/functional/*/source/data/in/
+# Writer components need input CSVs committed so replay reads the same data as recording.
+# Ignore only generated state files; keep in/tables checked in.
+tests/functional/*/source/data/in/state.json
